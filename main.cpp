@@ -34,7 +34,10 @@ SOURIS:
     int incrE, incrNE, incrX, incrY, di;
 
     //COORDONNEES DU CERCLE
-    int xc, yc;
+    int xc, yc; //POINTS ORIGINE
+    //POINTS DESTINATION
+    int rx = 0;
+    int ry = 0;
     int r; //RAYON
     int c_incrE, c_incrSE; //INCREMENTATION EST ET SUD EST
     int dp;
@@ -42,15 +45,17 @@ SOURIS:
     int m, p;
     int x = 0;
     int y = 0;
-    int f;
-    int i;
 
 
 //PROTOTYPES DE FONCTIONS
-void mouse(int button,int state,int x,int y);
+void mouse_segment(int button,int state,int x0,int y0);
+void mouse_cercle(int button, int state, int x0, int y0);
 void clavier(unsigned char touche,int x,int y);
 void affichePixel(int x, int y);
 void affichage(void);
+void bresemham_cercle(int xc, int yc, int r);
+void bresemham_segment(int xa, int xb, int ya, int yb);
+
 
 int main(int argc, char **argv){
     printf("Commandes disponibles: \n\n");
@@ -78,7 +83,8 @@ int main(int argc, char **argv){
 
 	//ENREGISTREMENT DES FONCTIONS D'APPELS
     glutDisplayFunc(affichage);
-    glutMouseFunc(mouse);
+    glutMouseFunc(mouse_cercle);
+    //glutMouseFunc(mouse_segment);
     //glutDisplayFunc(bloc_couleur);
 	glutKeyboardFunc(clavier);
 
@@ -89,6 +95,7 @@ int main(int argc, char **argv){
 int arrondi(double x){
     return x + 0.5;
 }
+//POUR LE CHOIX DE COULEUR
 /*void bloc_couleur(){
      //DESSIN DU CARRE DE COULEUR
     glBegin(GL_POLYGON);
@@ -107,8 +114,75 @@ int arrondi(double x){
 }*/
 void affichage(){
 
+    //TRACE DE CERCLES
+    x = 0;
+    y = r;
+    printf("\nRayon = %d", r);
+    dp = 5 - 4 * r;
+    affichePixel(x + xc, y + yc); //PREMIER PIXEL ALLUME A PARTIR DE L'OCTANT 2
+    affichePixel(y + xc, x + yc);
+    affichePixel(x + xc, -y + yc);
+    affichePixel(-y + xc, x + yc);
+
+    while(y > x){
+        if(dp <= 0){
+            dp = dp + 8 * x + 12;
+        }else{
+            dp = dp + 8 * (x - y) + 20;
+            y -= 1;
+        }
+        x += 1;
+        affichePixel(x + xc, y + yc);
+        affichePixel(y + xc, x + yc);
+        affichePixel(y + xc, -x + yc);
+        affichePixel(x + xc, -y + yc);
+        affichePixel(-x + xc, -y + yc);
+        affichePixel(-y + xc, -x + yc);
+        affichePixel(-y + xc, x + yc);
+        affichePixel(-x + xc, y + yc);
+    }
+    glFlush();
+}
+
+void affichePixel(int x, int y){
+    //glClear(GL_COLOR_BUFFER_BIT);
+        glColor3f(1.0,0.0,0.0); //ROUGE
+        glBegin(GL_POINTS);
+            glVertex2f(x, y);
+        glEnd();
+    glFlush();
+}
+void bresemham_cercle(int xc, int yc, int r){
+    x = 0;
+    y = r;
+    printf("\nrayon = %d", r);
+    dp = 5 - 4 * r;
+    affichePixel(x + xc, y + yc); //PREMIER PIXEL ALLUME A PARTIR DE L'OCTANT 2
+    affichePixel(y + xc, x + yc);
+    affichePixel(x + xc, -y + yc);
+    affichePixel(-y + xc, x + yc);
+
+    while(y > x){
+        if(dp <= 0){
+            dp = dp + 8 * x + 12;
+        }else{
+            dp = dp + 8 * (x - y) + 20;
+            y -= 1;
+        }
+        x += 1;
+        affichePixel(x + xc, y + yc);
+        affichePixel(y + xc, x + yc);
+        affichePixel(y + xc, -x + yc);
+        affichePixel(x + xc, -y + yc);
+        affichePixel(-x + xc, -y + yc);
+        affichePixel(-y + xc, -x + yc);
+        affichePixel(-y + xc, x + yc);
+        affichePixel(-x + xc, y + yc);
+    }
+}
+void bresemham_segment(int xa, int xb, int ya, int yb){
     //TRACE DE SEGMENTS
-    /*if(ya <= yb){ //OCTANTS 1, 2, 3 ET 4
+    if(ya <= yb){ //OCTANTS 1, 2, 3 ET 4
         if(xa <= xb){ //OCTANTS 1 ET 2
             dx = xb - xa;
             dy = yb - ya;
@@ -259,63 +333,12 @@ void affichage(){
             }
 
         }
-    }*/
-    //TRACE DE CERCLES
-    x = 0;
-    y = r;
-    printf("\nrayon = %d", r);
-    dp = 5 - 4 * r;
-    affichePixel(x + xc, y + yc); //PREMIER PIXEL ALLUME A PARTIR DE L'OCTANT 2
-    affichePixel(y + xc, x + yc);
-    affichePixel(x + xc, -y + yc);
-    affichePixel(-y + xc, x + yc);
-
-    while(y > x){
-        if(dp <= 0){
-            dp = dp + 8 * x + 12;
-        }else{
-            dp = dp + 8 * (x - y) + 20;
-            y -= 1;
-        }
-        x += 1;
-        affichePixel(x + xc, y + yc);
-        affichePixel(y + xc, x + yc);
-        affichePixel(y + xc, -x + yc);
-        affichePixel(x + xc, -y + yc);
-        affichePixel(-x + xc, -y + yc);
-        affichePixel(-y + xc, -x + yc);
-        affichePixel(-y + xc, x + yc);
-        affichePixel(-x + xc, y + yc);
     }
-    glFlush();
 }
+void mouse_cercle(int button, int state, int x0, int y0){
 
-void affichePixel(int x, int y){
-    //glClear(GL_COLOR_BUFFER_BIT);
-        glColor3f(1.0,0.0,0.0); //ROUGE
-        glBegin(GL_POINTS);
-            glVertex2f(x, y);
-        glEnd();
-    glFlush();
-}
-
-void mouse(int button, int state, int x0, int y0){
-        //DECOMMENTER/COMMENTER SI SEGMENT
-        /*if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-            xa = x0 - 250;
-            ya = -y0 + 250;
-
-        }
-        if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
-            xb = x0 - 250;
-            yb = -y0 + 250;
-
-            affichage();
-        }*/
-    rx = 0;
-    ry = 0;
-    //DECOMMENTER/COMMENTER SI CERCLE
     if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+
         printf("\nPOINT ORIGINE: ");
         xc = x0 - 250;
         printf("\nxc = %d", xc);
@@ -324,8 +347,8 @@ void mouse(int button, int state, int x0, int y0){
     }
 
      if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
-        int rx = 0;
-        int ry = 0;
+        rx = 0;
+        ry = 0;
         printf("\nPOINT D'ARRIVEE: ");
         //MOUVEMENT GAUCHE-DROITE
         rx = (x0 - xc) - 250;
@@ -385,14 +408,31 @@ void mouse(int button, int state, int x0, int y0){
         glFlush();
     }
 }
+void mouse_segment(int button, int state, int x0, int y0){
+
+    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+        xa = x0 - 250;
+        ya = -y0 + 250;
+
+    }
+    if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
+        xb = x0 - 250;
+        yb = -y0 + 250;
+
+        affichage();
+    }
+}
 //EVENEMENT AU CLAVIER
 void clavier(unsigned char touche,int x,int y){
 	switch (touche){
-        //case 'c': ;//Tracé de cercle
-        //case 's': ;//Tracé de segment
-        //case'e': ;//Tracé d'ellipse
+        case 'c':
+
+            break;//Tracé de cercle
+        case 's':
+            break;//Tracé de segment
+        case'e':
+            break;//Tracé d'ellipse
 		case 'q': //Quitter le programme
 			exit(0);
 	}
 }
-
