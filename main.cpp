@@ -89,7 +89,7 @@ int main(int argc, char **argv){
         //FENETRE DE COULEUR
         glutInitWindowSize(500, 500); //DIMENSION DE LA FENETRE
         glutInitWindowPosition (100, 100); //POSITION HAUT/GAUCHE
-        glutCreateWindow("DONNEZ DE LA COULEURS A VOS FORMES!"); //NOM DE LA FENETRE
+        glutCreateWindow("DONNEZ DE LA COULEUR A VOS TRACES!"); //NOM DE LA FENETRE
         //REPERE 2D DELIMITANT LES ABSCISSES ET LES ORDONNEES
         gluOrtho2D(-250.0, 250.0, -250.0, 250.0);
         //INITIALISATION D'OPENGL
@@ -111,18 +111,16 @@ void bloc_couleur(){
     glClear(GL_COLOR_BUFFER_BIT);
     //DESSIN DU CARRE DE COULEUR
     glBegin(GL_POLYGON);
+
         glColor3f(1.0,0.0,0.0); //ROUGE
-        //glVertex3f(0.0, 0.0, 0.0);
-        glVertex2f(0, 0);
+        glVertex2f(-250, -250);
         glColor3f(0.0,1.0,0.0); //VERT
-        //glVertex3f(0.5, 0.0, 0.0);
-        glVertex2f(0, 500);
+        glVertex2f(-250, 250);
         glColor3f(0.0,0.0,1.0); //BLEU
-        //glVertex3f(0.5, 0.5, 0.0);
-        glVertex2f(500, 0);
+        glVertex2f(250, 250);
         glColor3f(1.0,1.0,1.0); //BLANC
-        //glVertex3f(0.0, 0.5, 0.0);
-        glVertex2f(500, 500);
+        glVertex2f(250, -250);
+
     glEnd();
     glFlush();
 }
