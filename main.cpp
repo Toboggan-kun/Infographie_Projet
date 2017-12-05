@@ -21,7 +21,7 @@ SOURIS:
 #include<GL/glut.h>
 #include<stdlib.h>
 #include<stdio.h>
-//#include<math.h>
+
 
 //DECLARATION DES VARIABLES
     //CLIC SOURIS
@@ -55,6 +55,7 @@ void affichePixel(int x, int y);
 void affichage(void);
 void bresemham_cercle(int xc, int yc, int r);
 void bresemham_segment(int xa, int xb, int ya, int yb);
+void bloc_couleur(void);
 
 
 int main(int argc, char **argv){
@@ -67,26 +68,36 @@ int main(int argc, char **argv){
 
 	//INITIALISATION DE GLUT ET CREATION DE LA FENETRE
 	glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH); // mode d'affichage RGB, et test prafondeur
-    glutInitWindowSize(500, 500); //DIMENSION DE LA FENETRE
-	glutInitWindowPosition (100, 100); //POSITION HAUT/GAUCHE
-	glutCreateWindow("PROJET"); //NOM DE LA FENETRE
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
 
-	//REPERE 2D DELIMITANT LES ABSCISSES ET LES ORDONNEES
-	gluOrtho2D(-250.0, 250.0, -250.0, 250.0);
+        //FENETRE PRINCIPALE
+        glutInitWindowSize(500, 500); //DIMENSION DE LA FENETRE
+        glutInitWindowPosition (100, 100); //POSITION HAUT/GAUCHE
+        glutCreateWindow("PROJET"); //NOM DE LA FENETRE
+        //REPERE 2D DELIMITANT LES ABSCISSES ET LES ORDONNEES
+        gluOrtho2D(-250.0, 250.0, -250.0, 250.0);
+        //INITIALISATION D'OPENGL
+        glClearColor(0.0, 0.0, 0.0, 0.0);
+        glColor3f(1.0, 1.0, 1.0); //COULEUR: BLANC
+        glPointSize(2.0); //TAILLE D'UN POINT: 2px
+        //ENREGISTREMENT DES FONCTIONS D'APPELS
+        glutDisplayFunc(affichage);
+        glutMouseFunc(mouse_cercle);
+        //glutMouseFunc(mouse_segment);
+        glutKeyboardFunc(clavier);
 
-	//INITIALISATION D'OPENGL
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glColor3f(1.0, 1.0, 1.0); //COULEUR: BLANC
-	glPointSize(2.0); //TAILLE D'UN POINT: 2px
-
-
-	//ENREGISTREMENT DES FONCTIONS D'APPELS
-    glutDisplayFunc(affichage);
-    glutMouseFunc(mouse_cercle);
-    //glutMouseFunc(mouse_segment);
-    //glutDisplayFunc(bloc_couleur);
-	glutKeyboardFunc(clavier);
+        //FENETRE DE COULEUR
+        glutInitWindowSize(500, 500); //DIMENSION DE LA FENETRE
+        glutInitWindowPosition (100, 100); //POSITION HAUT/GAUCHE
+        glutCreateWindow("DONNEZ DE LA COULEURS A VOS FORMES!"); //NOM DE LA FENETRE
+        //REPERE 2D DELIMITANT LES ABSCISSES ET LES ORDONNEES
+        gluOrtho2D(-250.0, 250.0, -250.0, 250.0);
+        //INITIALISATION D'OPENGL
+        glClearColor(0.0, 0.0, 0.0, 0.0);
+        glColor3f(1.0, 1.0, 1.0); //COULEUR: BLANC
+        glPointSize(2.0); //TAILLE D'UN POINT: 2px
+        //ENREGISTREMENT DES FONCTIONS D'APPELS
+        glutDisplayFunc(bloc_couleur);
 
 
     glutMainLoop();
@@ -96,22 +107,25 @@ int arrondi(double x){
     return x + 0.5;
 }
 //POUR LE CHOIX DE COULEUR
-/*void bloc_couleur(){
-     //DESSIN DU CARRE DE COULEUR
+void bloc_couleur(){
+    glClear(GL_COLOR_BUFFER_BIT);
+    //DESSIN DU CARRE DE COULEUR
     glBegin(GL_POLYGON);
         glColor3f(1.0,0.0,0.0); //ROUGE
-        glVertex3f(0.0, 0.0, 0.0);
-
+        //glVertex3f(0.0, 0.0, 0.0);
+        glVertex2f(0, 0);
         glColor3f(0.0,1.0,0.0); //VERT
-        glVertex3f(0.5, 0.0, 0.0);
-
+        //glVertex3f(0.5, 0.0, 0.0);
+        glVertex2f(0, 500);
         glColor3f(0.0,0.0,1.0); //BLEU
-        glVertex3f(0.5, 0.5, 0.0);
-
+        //glVertex3f(0.5, 0.5, 0.0);
+        glVertex2f(500, 0);
         glColor3f(1.0,1.0,1.0); //BLANC
-        glVertex3f(0.0, 0.5, 0.0);
+        //glVertex3f(0.0, 0.5, 0.0);
+        glVertex2f(500, 500);
     glEnd();
-}*/
+    glFlush();
+}
 void affichage(){
 
     //TRACE DE CERCLES
