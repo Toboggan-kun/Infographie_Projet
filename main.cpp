@@ -21,13 +21,15 @@ SOURIS:
 #include<GL/glut.h>
 #include<stdlib.h>
 #include<stdio.h>
+#define fini FALSE
+#define accept FALSE
 
 
 //DECLARATION DES VARIABLES
     //MENU
     int menu;
     int window;
-    int value = 0;
+    int value = 1;
     //CLIC SOURIS
     int x0, y0;
     int cnt = 0;
@@ -46,16 +48,23 @@ SOURIS:
     int r; //RAYON
     int c_incrE, c_incrSE; //INCREMENTATION EST ET SUD EST
     int dp;
+
+    //FENETRAGE
+    int Xmin, Xmax, Ymin, Ymax; //COORDONNEES DE LA FENETRE
+    int codeA, codeB, codeExt; //CODE SEGMENT
+    int somme, gauche, droite, haut, bas;
+    int segmentCode;
     //VARIABLES INTERMEDIAIRES
     int m, p;
     int x = 0;
     int y = 0;
-    int c;
+    int c; //COULEUR
 
 
 //PROTOTYPES DE FONCTIONS
 void menuInterface(int num);
 void clearConsole(void);
+//void pickColor(int x0, int y0, int c);
 void menuInterface(int menu);
 void mouse(int button, int state, int x0, int y0);
 void affichePixel(int x, int y);
@@ -91,6 +100,7 @@ int main(int argc, char **argv){
         glutAddMenuEntry("Segment", 1);
         glutAddMenuEntry("Cercle", 2);
         glutAddMenuEntry("Ellipse", 3);
+        glutAddMenuEntry("Découpage", 9);
         glutAddMenuEntry("Effacer", 4);
         glutAddMenuEntry("Quitter le programme", 5);
         glutAttachMenu(GLUT_RIGHT_BUTTON); //AU CLIC DROIT
@@ -107,10 +117,19 @@ int main(int argc, char **argv){
         glPointSize(2.0); //TAILLE D'UN POINT: 2px
         //ENREGISTREMENT DES FONCTIONS D'APPELS
         glutDisplayFunc(bloc_couleur);
+        //glutMouseFunc(pickColor);
 
     glutMainLoop();
     return 0;
 }
+/*void pickColor(int button, int state, int x0, int y0, int c){
+    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+        x = x0 - 250;
+        y = -y0 + 250;
+
+        c =
+    }
+}*/
 //POUR LE CHOIX DE COULEUR
 void menuInterface(int num){
     if(menu == 0){
@@ -141,19 +160,19 @@ void bloc_couleur(){
 void affichage(){
 
     if(value == 1){
-        printf("\nSegment\n");
+
         bresemham_segment(xa, xb, ya, yb);
 
     }else if(value == 2){
-        printf("\nCercle\n");
+
         bresemham_cercle(xc, yc, r);
 
     }else if(value == 3){
-        printf("\nEllipse en cours...\n");
+
     }else if(value == 4){
-        printf("\nEffacer\n");
         clearConsole();
         value = 0;
+
     }else if(value == 5){
         exit(0);
     }
@@ -165,7 +184,7 @@ void clearConsole(){
 }
 void affichePixel(int x, int y){
     //glClear(GL_COLOR_BUFFER_BIT);
-        glColor3f(1.0,0.0,0.0); //ROUGE
+        glColor3f(1.0,1.0,1.0); //BLANC
         glBegin(GL_POINTS);
             glVertex2f(x, y);
         glEnd();
@@ -198,6 +217,9 @@ void bresemham_cercle(int xc, int yc, int r){
         affichePixel(-y + xc, x + yc);
         affichePixel(-x + xc, y + yc);
     }
+
+}
+void fenetrage(){
 
 }
 void bresemham_segment(int xa, int xb, int ya, int yb){
@@ -354,7 +376,15 @@ void bresemham_segment(int xa, int xb, int ya, int yb){
 
         }
     }
-    //affichage();
+
+}
+void bresemham_ellipse(int xc, int yc, int r){
+    if(y >= x){
+
+        x = 0;
+        y = r;
+
+    }
 }
 void mouse(int button, int state, int x0, int y0){
 
@@ -426,20 +456,29 @@ void mouse(int button, int state, int x0, int y0){
         }
     }else if(value == 1){
         //TRACE DE SEGMENT AVEC DEUX CLICS SOURIS
-        //if(cnt % 2 != 0){
+        if(cnt % 4 != 0){
             if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-                xa = x0 - 250;
-                ya = -y0 + 250;
-            }
-        //}
-        //else if(cnt % 4 != 0){
-            if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
                 xb = x0 - 250;
+                printf("\nxb = %d", xb);
                 yb = -y0 + 250;
+                printf("\nyb = %d\ncnt = %d", yb, cnt);
                 affichage();
             }
-        //}
-        //cnt++;
+        }
+        if(cnt % 2 == 0){
+            if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+                xa = x0 - 250;
+                printf("\nxa = %d", xa);
+                ya = -y0 + 250;
+                printf("\nxy = %d", ya);
+            }
+        }
+
+        cnt++;
     }
+
+}
+
+int calculCode(int x, int y, int Xmin, int Xmax, int Ymin, int Ymax){
 
 }
