@@ -24,8 +24,13 @@ SOURIS:
 
 
 //DECLARATION DES VARIABLES
+    //MENU
+    int menu;
+    int window;
+    int value = 0;
     //CLIC SOURIS
     int x0, y0;
+    int cnt = 0;
     //COORDONNEES DU SEGMENT [AB]
     int xa = 0;
     int ya = 0;
@@ -45,12 +50,14 @@ SOURIS:
     int m, p;
     int x = 0;
     int y = 0;
+    int c;
 
 
 //PROTOTYPES DE FONCTIONS
-void mouse_segment(int button,int state,int x0,int y0);
-void mouse_cercle(int button, int state, int x0, int y0);
-void clavier(unsigned char touche,int x,int y);
+void menuInterface(int num);
+void clearConsole(void);
+void menuInterface(int menu);
+void mouse(int button, int state, int x0, int y0);
 void affichePixel(int x, int y);
 void affichage(void);
 void bresemham_cercle(int xc, int yc, int r);
@@ -59,12 +66,6 @@ void bloc_couleur(void);
 
 
 int main(int argc, char **argv){
-    printf("Commandes disponibles: \n\n");
-    printf(" - 'c' pour activer le mode: trace de cercle.\n");
-    printf(" - 'e' pour activer le mode: trace d'ellipse.\n");
-    printf(" - 's' pour activer le mode: trace de segment.\n");
-    printf(" - clique droit pour nettoyer la fenetre.\n");
-    printf(" - 'q' pour quitter le programme.");
 
 	//INITIALISATION DE GLUT ET CREATION DE LA FENETRE
 	glutInit(&argc, argv);
@@ -73,18 +74,26 @@ int main(int argc, char **argv){
         //FENETRE PRINCIPALE
         glutInitWindowSize(500, 500); //DIMENSION DE LA FENETRE
         glutInitWindowPosition (100, 100); //POSITION HAUT/GAUCHE
-        glutCreateWindow("PROJET"); //NOM DE LA FENETRE
+        window = glutCreateWindow("PROJET"); //NOM DE LA FENETRE
         //REPERE 2D DELIMITANT LES ABSCISSES ET LES ORDONNEES
         gluOrtho2D(-250.0, 250.0, -250.0, 250.0);
         //INITIALISATION D'OPENGL
         glClearColor(0.0, 0.0, 0.0, 0.0);
-        glColor3f(1.0, 1.0, 1.0); //COULEUR: BLANC
+        glColor3f(0.0, 0.0, 0.0); //COULEUR: BLANC
         glPointSize(2.0); //TAILLE D'UN POINT: 2px
         //ENREGISTREMENT DES FONCTIONS D'APPELS
         glutDisplayFunc(affichage);
-        glutMouseFunc(mouse_cercle);
-        //glutMouseFunc(mouse_segment);
-        glutKeyboardFunc(clavier);
+        glutMouseFunc(mouse);
+
+        //GESTION DU MENU
+        menu = glutCreateMenu(menuInterface);
+
+        glutAddMenuEntry("Segment", 1);
+        glutAddMenuEntry("Cercle", 2);
+        glutAddMenuEntry("Ellipse", 3);
+        glutAddMenuEntry("Effacer", 4);
+        glutAddMenuEntry("Quitter le programme", 5);
+        glutAttachMenu(GLUT_RIGHT_BUTTON); //AU CLIC DROIT
 
         //FENETRE DE COULEUR
         glutInitWindowSize(500, 500); //DIMENSION DE LA FENETRE
@@ -94,68 +103,66 @@ int main(int argc, char **argv){
         gluOrtho2D(-250.0, 250.0, -250.0, 250.0);
         //INITIALISATION D'OPENGL
         glClearColor(0.0, 0.0, 0.0, 0.0);
-        glColor3f(1.0, 1.0, 1.0); //COULEUR: BLANC
+        glColor3f(0.0, 0.0, 0.0); //COULEUR: NOIR
         glPointSize(2.0); //TAILLE D'UN POINT: 2px
         //ENREGISTREMENT DES FONCTIONS D'APPELS
         glutDisplayFunc(bloc_couleur);
 
-
     glutMainLoop();
     return 0;
 }
-int arrondi(double x){
-    return x + 0.5;
-}
 //POUR LE CHOIX DE COULEUR
+void menuInterface(int num){
+    if(menu == 0){
+        glutDestroyWindow(window);
+        exit(0);
+    }else{
+        value = num;
+    }
+    glutPostRedisplay();
+}
 void bloc_couleur(){
     glClear(GL_COLOR_BUFFER_BIT);
     //DESSIN DU CARRE DE COULEUR
     glBegin(GL_POLYGON);
 
         glColor3f(1.0,0.0,0.0); //ROUGE
-        glVertex2f(-250, -250);
+        glVertex2f(-250.0, -250.0);
         glColor3f(0.0,1.0,0.0); //VERT
         glVertex2f(-250, 250);
         glColor3f(0.0,0.0,1.0); //BLEU
-        glVertex2f(250, 250);
+        glVertex2f(250.0, 250.0);
         glColor3f(1.0,1.0,1.0); //BLANC
-        glVertex2f(250, -250);
+        glVertex2f(250.0, -250.0);
 
     glEnd();
     glFlush();
 }
 void affichage(){
 
-    //TRACE DE CERCLES
-    x = 0;
-    y = r;
-    printf("\nRayon = %d", r);
-    dp = 5 - 4 * r;
-    affichePixel(x + xc, y + yc); //PREMIER PIXEL ALLUME A PARTIR DE L'OCTANT 2
-    affichePixel(y + xc, x + yc);
-    affichePixel(x + xc, -y + yc);
-    affichePixel(-y + xc, x + yc);
+    if(value == 1){
+        printf("\nSegment\n");
+        bresemham_segment(xa, xb, ya, yb);
 
-    while(y > x){
-        if(dp <= 0){
-            dp = dp + 8 * x + 12;
-        }else{
-            dp = dp + 8 * (x - y) + 20;
-            y -= 1;
-        }
-        x += 1;
-        affichePixel(x + xc, y + yc);
-        affichePixel(y + xc, x + yc);
-        affichePixel(y + xc, -x + yc);
-        affichePixel(x + xc, -y + yc);
-        affichePixel(-x + xc, -y + yc);
-        affichePixel(-y + xc, -x + yc);
-        affichePixel(-y + xc, x + yc);
-        affichePixel(-x + xc, y + yc);
+    }else if(value == 2){
+        printf("\nCercle\n");
+        bresemham_cercle(xc, yc, r);
+
+    }else if(value == 3){
+        printf("\nEllipse en cours...\n");
+    }else if(value == 4){
+        printf("\nEffacer\n");
+        clearConsole();
+        value = 0;
+    }else if(value == 5){
+        exit(0);
     }
     glFlush();
-}
 
+}
+void clearConsole(){
+    glClear(GL_COLOR_BUFFER_BIT);
+}
 void affichePixel(int x, int y){
     //glClear(GL_COLOR_BUFFER_BIT);
         glColor3f(1.0,0.0,0.0); //ROUGE
@@ -191,6 +198,7 @@ void bresemham_cercle(int xc, int yc, int r){
         affichePixel(-y + xc, x + yc);
         affichePixel(-x + xc, y + yc);
     }
+
 }
 void bresemham_segment(int xa, int xb, int ya, int yb){
     //TRACE DE SEGMENTS
@@ -346,105 +354,92 @@ void bresemham_segment(int xa, int xb, int ya, int yb){
 
         }
     }
+    //affichage();
 }
-void mouse_cercle(int button, int state, int x0, int y0){
+void mouse(int button, int state, int x0, int y0){
 
-    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+    if(value == 2){
+        if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
 
         printf("\nPOINT ORIGINE: ");
         xc = x0 - 250;
         printf("\nxc = %d", xc);
         yc = -y0 + 250;
         printf("\nyc = %d", yc);
-    }
-
-     if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
-        rx = 0;
-        ry = 0;
-        printf("\nPOINT D'ARRIVEE: ");
-        //MOUVEMENT GAUCHE-DROITE
-        rx = (x0 - xc) - 250;
-        //printf("\nx0 = %d", x0);
-        printf("\nrx = %d", rx);
-        ry = (-y0 - yc) + 250;
-        //printf("\ny0 = %d", y0);
-        printf("\nry = %d", ry);
-
-        //OCTANTS 5/6
-        if(rx <= 0 && ry <= 0){
-            if(rx <= ry){
-                printf("\noctant 5");
-                r = -rx; //OCTANT 5
-            }else{
-                printf("\noctant 6");
-                r = -ry; //OCTANT 6
-            }
-
         }
-        //OCTANTS 7/8
-        if(rx >= 0 && ry <= 0){
-            if(rx >= ry){
-                printf("\noctant 8");
-                r = rx; //OCTANT 8
-            }else{
-                printf("\noctant 7");
-                r = -ry; //OCTANT 7
+
+        if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
+            rx = 0;
+            ry = 0;
+            printf("\nPOINT D'ARRIVEE: ");
+            //MOUVEMENT GAUCHE-DROITE
+            rx = (x0 - xc) - 250;
+            //printf("\nx0 = %d", x0);
+            printf("\nrx = %d", rx);
+            ry = (-y0 - yc) + 250;
+            //printf("\ny0 = %d", y0);
+            printf("\nry = %d", ry);
+
+            //OCTANTS 5/6
+            if(rx <= 0 && ry <= 0){
+                if(rx <= ry){
+                    printf("\noctant 5");
+                    r = -rx; //OCTANT 5
+                }else{
+                    printf("\noctant 6");
+                    r = -ry; //OCTANT 6
+                }
+
             }
+            //OCTANTS 7/8
+            if(rx >= 0 && ry <= 0){
+                if(rx >= ry){
+                    printf("\noctant 8");
+                    r = rx; //OCTANT 8
+                }else{
+                    printf("\noctant 7");
+                    r = -ry; //OCTANT 7
+                }
 
-        }
-        //OCTANTS 3/4
-        if(rx <= 0 && ry >= 0){
-            if(rx >= ry){
-                printf("\noctant 4");
-                r = -rx; //OCTANT 4
-            }else{
-                printf("\noctant 3");
-                r = ry; //OCTANT 3
             }
-        }
-        //OCTANTS 1/2
-         if(rx >= 0 && ry >= 0){
-            if(rx >= ry){
-                printf("\noctant 1");
-                r = rx; //OCTANT 1
-            }else{
-                printf("\noctant 2");
-                r = ry; //OCTANT 2
+            //OCTANTS 3/4
+            if(rx <= 0 && ry >= 0){
+                if(rx >= ry){
+                    printf("\noctant 4");
+                    r = -rx; //OCTANT 4
+                }else{
+                    printf("\noctant 3");
+                    r = ry; //OCTANT 3
+                }
             }
+            //OCTANTS 1/2
+             if(rx >= 0 && ry >= 0){
+                if(rx >= ry){
+                    printf("\noctant 1");
+                    r = rx; //OCTANT 1
+                }else{
+                    printf("\noctant 2");
+                    r = ry; //OCTANT 2
+                }
+            }
+            affichage();
         }
-        affichage();
+    }else if(value == 1){
+        //TRACE DE SEGMENT AVEC DEUX CLICS SOURIS
+        //if(cnt % 2 != 0){
+            if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+                xa = x0 - 250;
+                ya = -y0 + 250;
+            }
+        //}
+        //else if(cnt % 4 != 0){
+            if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
+                xb = x0 - 250;
+                yb = -y0 + 250;
+                affichage();
+            }
+        //}
+        //cnt++;
     }
 
-    if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN){
-        glClear(GL_COLOR_BUFFER_BIT);
-        glFlush();
-    }
-}
-void mouse_segment(int button, int state, int x0, int y0){
-
-    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-        xa = x0 - 250;
-        ya = -y0 + 250;
-
-    }
-    if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
-        xb = x0 - 250;
-        yb = -y0 + 250;
-
-        affichage();
-    }
-}
-//EVENEMENT AU CLAVIER
-void clavier(unsigned char touche,int x,int y){
-	switch (touche){
-        case 'c':
-
-            break;//Tracé de cercle
-        case 's':
-            break;//Tracé de segment
-        case'e':
-            break;//Tracé d'ellipse
-		case 'q': //Quitter le programme
-			exit(0);
-	}
 }
