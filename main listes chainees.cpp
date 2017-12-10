@@ -72,6 +72,12 @@ SOURIS:
     int y = 0;
     int c; //COULEUR
 
+    //POLYGON
+    int nbCote = 0;
+    int destinationPointX, destinationPointY;
+    int clicPolygon = 0;
+    int clicEnd;
+
 
 //PROTOTYPES DE FONCTIONS
 void menuInterface(int num);
@@ -286,9 +292,6 @@ CircleList *listOfCircle = initialisationCircle();
 
 int main(int argc, char **argv){
 
-
-
-
 	//INITIALISATION DE GLUT ET CREATION DE LA FENETRE
 	glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
@@ -414,6 +417,11 @@ void affichage(){
         exit(0);
     } else if(value == 1 && change == 0){
         change = 1;
+    }else if(value == 9){
+
+        clicEnd = 1;
+        bresemham_segment(xa, xb, ya, yb);
+
     }
 
     glFlush();
@@ -755,6 +763,78 @@ void mouse(int button, int state, int x0, int y0){
                 glVertex2d(xa, yb);
                 glVertex2d(xa, ya);
                 affichage();
+        }
+
+    }else if(value == 9){
+        clicEnd = 1;
+        if(clicEnd == 1){
+
+            printf("\nNombres de cotes: %d", nbCote);
+            if(nbCote >= 3){
+
+                if(button == GLUT_RIGHT_BUTTON){
+                    printf("\nDERNIERE CONDITION");
+                    xa = xb;
+                    ya = yb;
+                    xb = destinationPointX;
+                    yb = destinationPointY;
+                    affichage();
+                    nbCote = 0;
+                    clicEnd = 0;
+
+                }
+            }
+            //TRACE DE SEGMENT AVEC DEUX CLICS SOURIS
+            //ENREGISTREMENT DU PREMIER POINT
+            while(clicPolygon == 0){
+                printf("\n1- valeur de clic = %d", clicPolygon);
+                if(cnt % 2 == 0){
+                    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+                        xa = x0 - 250;
+                        ya = -y0 + 250;
+                        if(counter == 0){
+                            destinationPointX = xa;
+                            destinationPointY = ya;
+                            printf("\nPremier point enregistre!\nxa = %d\n ya = %d\n", xa, ya);
+                        }
+                        counter = 1;
+
+                    }
+                    nbCote++;
+                }
+                if(cnt % 4 != 0){
+                    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+                        xb = x0 - 250;
+                        yb = -y0 + 250;
+                        affichage();
+
+                    }
+                    nbCote++;
+                }
+
+
+                cnt++;
+                clicPolygon = 1;
+            }
+            //ON PART A PARTIR DU DERNIER POINT TRACE
+            if(clicPolygon != 0){
+                printf("\n2- valeur de clic = %d", clicPolygon);
+                if(cnt % 4 != 0){
+                    xa = xb;
+                    ya = yb;
+                    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+                        xb = x0 - 250;
+                        yb = -y0 + 250;
+                        affichage();
+
+
+                    }
+                }
+                nbCote++;
+                cnt++;
+                clicPolygon = 0;
+            }
+
         }
 
     }
