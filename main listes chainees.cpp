@@ -312,17 +312,18 @@ int main(int argc, char **argv){
 
         //GESTION DU MENU
         menu = glutCreateMenu(menuInterface);
-
-        glutAddMenuEntry("Segment", 1);
-        glutAddMenuEntry("Cercle", 2);
-        glutAddMenuEntry("Ellipse", 3);
-        glutAddMenuEntry("Découpage", 4);
-        glutAddMenuEntry("Effacer la console", 5);
-        glutAddMenuEntry("Effacer un segment", 6);
-        glutAddMenuEntry("Effacer un cercle", 7);
-        glutAddMenuEntry("Quitter le programme", 8);
-        glutAttachMenu(GLUT_RIGHT_BUTTON); //AU CLIC DROIT
-
+        if(clicEnd == 0){
+            glutAddMenuEntry("Segment", 1);
+            glutAddMenuEntry("Cercle", 2);
+            glutAddMenuEntry("Ellipse", 3);
+            glutAddMenuEntry("Découpage", 4);
+            glutAddMenuEntry("Effacer la console", 5);
+            glutAddMenuEntry("Effacer un segment", 6);
+            glutAddMenuEntry("Effacer un cercle", 7);
+            glutAddMenuEntry("Polygone", 9);
+            glutAddMenuEntry("Quitter le programme", 8);
+            glutAttachMenu(GLUT_RIGHT_BUTTON); //AU CLIC DROIT
+        }
         //FENETRE DE COULEUR
         glutInitWindowSize(500, 500); //DIMENSION DE LA FENETRE
         glutInitWindowPosition (100, 100); //POSITION HAUT/GAUCHE
@@ -766,7 +767,7 @@ void mouse(int button, int state, int x0, int y0){
         }
 
     }else if(value == 9){
-        clicEnd = 1;
+
         if(clicEnd == 1){
 
             printf("\nNombres de cotes: %d", nbCote);
