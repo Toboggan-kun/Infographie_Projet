@@ -21,13 +21,25 @@ SOURIS:
 #include<GL/glut.h>
 #include<stdlib.h>
 #include<stdio.h>
+/*
+//RGB PALETTE
+#define RED 255
+#define GREEN 255
+#define BLUE 255*/
 
 //DECLARATION DES VARIABLES
     //MENU
     int menu;
+    int menu2;
+    int menuColor;
+    int color;
     int window;
+    int windowColor;
+    int numberMenu;
     int value = 1;
     int counter = 0;
+    int change = 0;
+    int drawSegment = 0;
     //CLIC SOURIS
     int x0, y0;
     int cnt = 0;
@@ -81,25 +93,176 @@ SOURIS:
 
     //COULEUR
     int i, j;
-    int R, G, B;
-
+    int R[255];
+    int G[255];
+    int B[255];
+    int palette[1280][3];
+    int index = 0;
 
 
 //PROTOTYPES DE FONCTIONS
 void menuInterface(int num);
 void clearConsole(void);
 //void pickColor(int x0, int y0, int c);
-void menuInterface(int menu);
+//void menuColor(int numberMenu);
+//void pickColor(void);
 void mouse(int button, int state, int x0, int y0);
 void affichePixel(int x, int y);
 void affichage(void);
 void bresemham_cercle(int xc, int yc, int r);
 void bresemham_segment(int xa, int xb, int ya, int yb);
-void bloc_couleur(void);
 void calculCode(void);
 int fenetrage(int, int, int, int, int, int, int, int);
 int compareStructure(CodeSegment, CodeSegment);
 void polygon_trace(int xa, int xb, int ya, int yb);
+// DEFINITION DE L'ELEMENT DE LA LISTE CHAINE DES SEGMENTS
+typedef struct Segment Segment;
+struct Segment
+{
+    int xa;
+    int ya;
+    int xb;
+    int yb;
+    Segment *next;
+};
+
+
+// DEFINITION DE LA LISTE CHAINE DES SEGMENTS
+typedef struct SegmentList SegmentList;
+struct SegmentList
+{
+    Segment *first;
+};
+
+
+//INITIALISATION DE LA LISTE CHAINE
+SegmentList *initialisationSegment(){
+    SegmentList *listsegment = (SegmentList *)malloc(sizeof(*listsegment));
+
+    if(listsegment == NULL){
+        exit(EXIT_FAILURE);
+    }
+
+    listsegment->first = NULL;
+
+    return listsegment;
+}
+
+// FONCTION D'AJOUT D'UN ELEMENT DE LA LISTE CHAINEE
+void addSegment(SegmentList *listsegment, int xa, int ya, int xb, int yb){
+    /* On crée un nouvel élément */
+    Segment* newSegment = (Segment *)malloc(sizeof(*newSegment));
+
+    /* On assigne la valeur au nouvel élément */
+    newSegment->xa = xa;
+    newSegment->ya = ya;
+    newSegment->xb = xb;
+    newSegment->yb = yb;
+
+    /* On ajoute en fin, donc aucun élément ne va suivre */
+    newSegment->next = NULL;
+
+    if(listsegment->first == NULL){
+        /* Si la liste est videé il suffit de renvoyer l'élément créé */
+        listsegment->first = newSegment;
+    }else{
+        /* Sinon, on parcourt la liste à l'aide d'un pointeur temporaire et on
+        indique que le dernier élément de la liste est relié au nouvel élément */
+        Segment* temp = listsegment->first;
+        while(temp->next != NULL){
+            temp = temp->next;
+        }
+        temp->next = newSegment;
+    }
+}
+
+// AFFICHAGE DES ELEMENTS DE LA LISTE CHAINEE DES SEGMENTS
+void displaySegmentList(SegmentList *listsegment){
+    if(listsegment == NULL){
+        exit(EXIT_FAILURE);
+    }
+    Segment *actual = listsegment->first;
+
+    while (actual != NULL){
+        printf("xa: %d, ya: %d, xb: %d, yb: %d -> ", actual->xa, actual->ya, actual->xb, actual->yb);
+        actual = actual->next;
+    }
+    printf("NULL\n");
+}
+
+
+// DEFINITION DE L'ELEMENT DE LA LISTE CHAINE DES SEGMENTS
+typedef struct Circle Circle;
+struct Circle{
+    int x;
+    int y;
+    int r;
+    Circle *next;
+};
+
+
+// DEFINITION DE LA LISTE CHAINE DES SEGMENTS
+typedef struct CircleList CircleList;
+struct CircleList{
+    Circle *first;
+};
+//INITIALISATION DE LA LISTE CHAINE
+CircleList *initialisationCircle(){
+    CircleList *listcircle = (CircleList *)malloc(sizeof(*listcircle));
+
+    if(listcircle == NULL){
+        exit(EXIT_FAILURE);
+    }
+    listcircle->first = NULL;
+
+    return listcircle;
+}
+
+// FONCTION D'AJOUT D'UN ELEMENT DE LA LISTE CHAINEE
+void addCircle(CircleList *listcircle, int x, int y, int r){
+    /* On crée un nouvel élément */
+    Circle* newCircle = (Circle *)malloc(sizeof(*newCircle));
+
+    /* On assigne la valeur au nouvel élément */
+    newCircle->x = x;
+
+    /* On ajoute en fin, donc aucun élément ne va suivre */
+    newCircle->y = y;
+    newCircle->r = r;
+    newCircle->next = NULL;
+
+    if(listcircle->first == NULL){
+        /* Si la liste est videé il suffit de renvoyer l'élément créé */
+        listcircle->first = newCircle;
+    }else{
+        /* Sinon, on parcourt la liste à l'aide d'un pointeur temporaire et on
+        indique que le dernier élément de la liste est relié au nouvel élément */
+        Circle* temp = listcircle->first;
+        while(temp->next != NULL){
+            temp = temp->next;
+        }
+        temp->next = newCircle;
+    }
+}
+
+
+// AFFICHAGE DES ELEMENTS DE LA LISTE CHAINEE
+void displayCircleList(CircleList *listcircle){
+    if (listcircle == NULL){
+        exit(EXIT_FAILURE);
+    }
+
+    Circle *actual = listcircle->first;
+
+    while (actual != NULL){
+        printf("x: %d, y: %d, r: %d -> ", actual->x, actual->y, actual->r);
+        actual = actual->next;
+    }
+    printf("NULL\n");
+}
+
+SegmentList *listOfSegment = initialisationSegment();
+CircleList *listOfCircle = initialisationCircle();
 
 int main(int argc, char **argv){
 
@@ -124,19 +287,22 @@ int main(int argc, char **argv){
         //GESTION DU MENU
         menu = glutCreateMenu(menuInterface);
         if(clicEnd == 0){
-        glutAddMenuEntry("Segment", 1);
-        glutAddMenuEntry("Cercle", 2);
-        glutAddMenuEntry("Ellipse", 3);
-        glutAddMenuEntry("Polygone", 9);
-        glutAddMenuEntry("Fenêtrage", 4);
-        glutAddMenuEntry("Effacer", 5);
-        glutAddMenuEntry("Quitter le programme", 6);
+
+            glutAddMenuEntry("Segment", 1);
+            glutAddMenuEntry("Cercle", 2);
+            glutAddMenuEntry("Ellipse", 3);
+            glutAddMenuEntry("Découpage", 4);
+            glutAddMenuEntry("Effacer la console", 5);
+            glutAddMenuEntry("Effacer un segment", 6);
+            glutAddMenuEntry("Effacer un cercle", 7);
+            glutAddMenuEntry("Polygone", 9);
+            glutAddMenuEntry("Quitter le programme", 8);
 
             glutAttachMenu(GLUT_RIGHT_BUTTON); //AU CLIC DROIT
         }
 
 
-        //FENETRE DE COULEUR
+        /*//FENETRE DE COULEUR
         glutInitWindowSize(500, 500); //DIMENSION DE LA FENETRE
         glutInitWindowPosition (100, 100); //POSITION HAUT/GAUCHE
         glutCreateWindow("DONNEZ DE LA COULEUR A VOS TRACES!"); //NOM DE LA FENETRE
@@ -145,10 +311,26 @@ int main(int argc, char **argv){
         //INITIALISATION D'OPENGL
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glColor3f(0.0, 0.0, 0.0); //COULEUR: NOIR
-        glPointSize(2.0); //TAILLE D'UN POINT: 2px
+        glPointSize(2.0); //TAILLE D'UN POINT: 2px*/
         //ENREGISTREMENT DES FONCTIONS D'APPELS
-        glutDisplayFunc(bloc_couleur);
+        /*glutDisplayFunc(pickColor);
+
+        menu2 = glutCreateMenu(menuColor);
+        glutAddMenuEntry("Couleurs", menuColor);
+        glutAddSubMenu("Rouge", 11);
+        glutAddSubMenu("Fuchsia", 12);
+        glutAddSubMenu("Bleu Foncé", 13);
+        glutAddSubMenu("Bleu Clair", 14);
+        glutAddSubMenu("Vert", 15);
+        glutAddSubMenu("Jaune", 16);*/
+
         //glutMouseFunc(pickColor);
+        /*//INITIALISATION DES TABLEAUX R G B
+        for(i = 0; i <= 255; i++){
+            R[i] = i;
+            G[i] = i;
+            B[i] = i;
+        }*/
 
     glutMainLoop();
     return 0;
@@ -163,49 +345,67 @@ void menuInterface(int num){
     }
     glutPostRedisplay();
 }
-
-//POUR LE CHOIX DE COULEUR
-void bloc_couleur(){
+/*void menuColor(int numberMenu){
+    if(menu2 == 0){
+        glutDestroyWindow(windowColor);
+        exit(0);
+    }else{
+        color = numberMenu;
+    }
+    glutPostRedisplay();
+}*/
+/*//POUR LE CHOIX DE COULEUR
+void pickColor(){
 
     glClear(GL_COLOR_BUFFER_BIT);
+    switch(color){
+    case 10: //ROUGE
 
-    /*glBegin(GL_POLYGON);
-        glColor3f(1.0,0.0,0.0); //ROUGE
-        glVertex2f(-250.0, -250.0);
-        glColor3f(0.0,1.0,0.0); //VERT
-        glVertex2f(-250.0, 250.0);
-        glColor3f(0.0,0.0,1.0); //BLEU
-        glVertex2f(250.0, 250.0);
-        glColor3f(1.0,1.0,1.0); //BLANC
-        glVertex2f(250.0, -250.0);
-    glEnd();*/
-    glBegin(GL_POINTS);
-    for(i = -255; i < 255; i++){ //for(i = -250; i < 250; i++)
-        R = 255;
-        G = 0;
-        B = 0;
-        for(j = -255; j < 255; j++){
-            R--;
-            glColor3b(R, G, B);
-            glVertex2i(i, j);
-        }
+            glBegin(GL_POLYGON);
+            glColor3f(0.0,0.0,0.0); //NOIR
+            glVertex2f(-250.0, -250.0);
+            glColor3f(0.0,0.0,0.0); //NOIR
+            glVertex2f(-250.0, 250.0);
+            glColor3f(1.0,0.0,0.0); //ROUGE
+            glVertex2f(250.0, 250.0);
+            glColor3f(1.0,1.0,1.0); //BLANC
+            glVertex2f(250.0, -250.0);
+
+        break;
+    case 11: //FUCHSIA
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glBegin(GL_POLYGON);
+            glColor3f(0.0,0.0,0.0); //NOIR
+            glVertex2f(-250.0, -250.0);
+            glColor3f(0.0,0.0,0.0); //NOIR
+            glVertex2f(-250.0, 250.0);
+            glColor3f(1.0,0.0,1.0); //ROUGE
+            glVertex2f(250.0, 250.0);
+            glColor3f(1.0,1.0,1.0); //BLANC
+            glVertex2f(250.0, -250.0);
+
+        break;
+
     }
+
     glEnd();
-
-
     glFlush();
-}
+}*/
 void affichage(){
 
-    if(value == 1){ //SEGMENT
+    if(value == 1 && change == 1){ //SEGMENT
         bresemham_segment(xa, xb, ya, yb);
-        printf("\nxa, ya = %d %d; xb, yb = %d %d", xa, ya, xb, yb);
-        glFlush();
+        addSegment(listOfSegment,xa,ya,xb,yb);
+        displaySegmentList(listOfSegment);
+
     }else if(value == 2){ //CERCLE
         bresemham_cercle(xc, yc, r);
+        addCircle(listOfCircle,xc,yc,r);
         xc = 0;
         yc = 0;
         r = 0;
+
     }else if(value == 3){
 
     }else if(value == 4){ //DECOUPAGE
@@ -215,13 +415,28 @@ void affichage(){
         clearConsole();
         counter = 0;
         value = 0;
+        change = 0;
+        listOfSegment = initialisationSegment();
+        listOfCircle = initialisationCircle();
 
     }else if(value == 6){ //QUITTER LE PROGRAMME
         exit(0);
+    }else if(value == 7){ //EFFACER CERCLE
+        exit(0);
+
+    }else if(value == 8){ //QUITTER LE PROGRAMME
+        exit(0);
+
+    }else if(value == 1 && change == 0){
+        change = 1;
+
     }else if(value == 9){
 
         clicEnd = 1;
-        bresemham_segment(xa, xb, ya, yb);
+        if(drawSegment >= 2){
+            bresemham_segment(xa, xb, ya, yb);
+        }
+
 
     }
 
@@ -438,11 +653,17 @@ void bresemham_ellipse(int xc, int yc, int rx, int ry){
     y = 0;
     twoRX = 2 * rx * rx;
     twoRY = 2 * ry * ry;
-    //PREMIER CADRAN
-    affichePixel(x + xc, y + yc); //POINT 1: OCTANT 1
-    affichePixel(-x + xc, y + yc); //POINT 2: OCTANT 4
-    affichePixel(-x + xc, -y + yc); //POINT 3: OCTANT 5
-    affichePixel(x + xc, -y + yc); //POINT 4: OCTANT 8
+    //REGION 1
+    x = 0;
+    y = ry;
+    while(y <= 0){
+        //PREMIER CADRAN
+        affichePixel(x + xc, y + yc); //POINT 1: OCTANT 1
+        affichePixel(-x + xc, y + yc); //POINT 2: OCTANT 4
+        affichePixel(-x + xc, -y + yc); //POINT 3: OCTANT 5
+        affichePixel(x + xc, -y + yc); //POINT 4: OCTANT 8
+    }
+
 
 
 }
@@ -568,10 +789,7 @@ void mouse(int button, int state, int x0, int y0){
         }
 
     }else if(value == 9){
-
         if(clicEnd == 1){
-
-            printf("\nNombres de cotes: %d", nbCote);
             if(nbCote >= 3){
 
                 if(button == GLUT_RIGHT_BUTTON){
@@ -583,6 +801,7 @@ void mouse(int button, int state, int x0, int y0){
                     affichage();
                     nbCote = 0;
                     clicEnd = 0;
+                    drawSegment = 0;
 
                 }
             }
@@ -594,10 +813,12 @@ void mouse(int button, int state, int x0, int y0){
                     if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
                         xa = x0 - 250;
                         ya = -y0 + 250;
+
                         if(counter == 0){
                             destinationPointX = xa;
                             destinationPointY = ya;
                             printf("\nPremier point enregistre!\nxa = %d\n ya = %d\n", xa, ya);
+
                         }
                         counter = 1;
 
@@ -608,6 +829,7 @@ void mouse(int button, int state, int x0, int y0){
                     if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
                         xb = x0 - 250;
                         yb = -y0 + 250;
+
                         affichage();
 
                     }
@@ -620,15 +842,15 @@ void mouse(int button, int state, int x0, int y0){
             }
             //ON PART A PARTIR DU DERNIER POINT TRACE
             if(clicPolygon != 0){
-                printf("\n2- valeur de clic = %d", clicPolygon);
                 if(cnt % 4 != 0){
                     xa = xb;
                     ya = yb;
+
                     if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
                         xb = x0 - 250;
                         yb = -y0 + 250;
+                        drawSegment++;
                         affichage();
-
 
                     }
                 }
