@@ -57,6 +57,8 @@ SOURIS:
     int ry = 0;
     int r; //RAYON
     int dp;
+    int octantX;
+    int octantY;
 
     //ELLIPSE
     int r1; //REGION/RAYON 1
@@ -83,6 +85,8 @@ SOURIS:
     CodeSegment codeB;
     CodeSegment codeExt;
     CodeSegment codeXY;
+    int accepte = 0;
+    int fini = 0;
 
     int Xmin, Xmax, Ymin, Ymax; //COORDONNEES DE LA FENETRE
     //VARIABLES INTERMEDIAIRES
@@ -112,7 +116,7 @@ void affichage(void);
 void bresemham_cercle(int xc, int yc, int r);
 void bresemham_segment(int xa, int xb, int ya, int yb);
 void calculCode(void);
-int fenetrage(int, int, int, int, int, int, int, int);
+void fenetrage(int, int, int, int, int, int, int, int);
 int compareStructure(CodeSegment, CodeSegment);
 void polygon_trace(int xa, int xb, int ya, int yb);
 // DEFINITION DE L'ELEMENT DE LA LISTE CHAINE DES SEGMENTS
@@ -291,10 +295,11 @@ int main(int argc, char **argv){
             glutAddMenuEntry("Segment", 1);
             glutAddMenuEntry("Cercle", 2);
             glutAddMenuEntry("Ellipse", 3);
-            glutAddMenuEntry("Découpage", 4);
+            glutAddMenuEntry("Fenêtrage", 4);
             glutAddMenuEntry("Effacer la console", 5);
             glutAddMenuEntry("Effacer un segment", 6);
             glutAddMenuEntry("Effacer un cercle", 7);
+            glutAddMenuEntry("Arc de cercle", 10);
             glutAddMenuEntry("Polygone", 9);
             glutAddMenuEntry("Quitter le programme", 8);
 
@@ -410,7 +415,7 @@ void affichage(){
 
     }else if(value == 4){ //DECOUPAGE
 
-        glEnd();
+        fenetrage(xa, xb, ya, yb, Xmin, Xmax, Ymin, Ymax);
     }else if(value == 5){ //EFFACER CONSOLE
         clearConsole();
         counter = 0;
@@ -438,6 +443,9 @@ void affichage(){
         }
 
 
+    }else if(value == 10){
+
+        r = 0;
     }
 
     glFlush();
@@ -703,10 +711,10 @@ void mouse(int button, int state, int x0, int y0){
                 rx = -rx;
                 ry = -ry;
                 if(rx >= ry){
-                    printf("\noctant 5");
+                    //printf("\noctant 5");
                     r = rx; //OCTANT 5
                 }else{
-                    printf("\noctant 6");
+                    //printf("\noctant 6");
                     r = ry; //OCTANT 6
                 }
 
@@ -715,10 +723,10 @@ void mouse(int button, int state, int x0, int y0){
             else if(rx >= 0 && ry <= 0){
                 ry = -ry;
                 if(rx >= ry){
-                    printf("\noctant 8");
+                    //printf("\noctant 8");
                     r = rx; //OCTANT 8
                 }else if(ry >= rx){
-                    printf("\noctant 7");
+                    //printf("\noctant 7");
                     r = ry; //OCTANT 7
                 }
 
@@ -727,20 +735,20 @@ void mouse(int button, int state, int x0, int y0){
             else if(rx <= 0 && ry >= 0){
                 rx = -rx;
                 if(rx >= ry){
-                    printf("\noctant 4");
+                    //printf("\noctant 4");
                     r = rx; //OCTANT 4
                 }else{
-                    printf("\noctant 3");
+                    //printf("\noctant 3");
                     r = ry; //OCTANT 3
                 }
             }
             //OCTANTS 1/2
              else if(rx >= 0 && ry >= 0){
                 if(rx >= ry){
-                    printf("\noctant 1");
+                    //printf("\noctant 1");
                     r = rx; //OCTANT 1
                 }else{
-                    printf("\noctant 2");
+                    //printf("\noctant 2");
                     r = ry; //OCTANT 2
                 }
             }
@@ -808,7 +816,7 @@ void mouse(int button, int state, int x0, int y0){
             //TRACE DE SEGMENT AVEC DEUX CLICS SOURIS
             //ENREGISTREMENT DU PREMIER POINT
             while(clicPolygon == 0){
-                printf("\n1- valeur de clic = %d", clicPolygon);
+                //printf("\n1- valeur de clic = %d", clicPolygon);
                 if(cnt % 2 == 0){
                     if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
                         xa = x0 - 250;
@@ -861,6 +869,135 @@ void mouse(int button, int state, int x0, int y0){
 
         }
 
+    }else if(value == 10){
+        if(counter % 2 == 0){
+            if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+                printf("\nPOINT ORIGINE: ");
+                xc = x0 - 250;
+                printf("\nxc = %d", xc);
+                yc = -y0 + 250;
+                printf("\nyc = %d", yc);
+                printf("\ncounter = %d", counter);
+            }
+        }
+        if(counter % 4 == 0){
+
+            if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
+                rx = 0;
+                ry = 0;
+                printf("\nPOINT D'ARRIVEE/RAYON: ");
+                //MOUVEMENT GAUCHE-DROITE
+                rx = (x0 - xc) - 250;
+                //printf("\nx0 = %d", x0);
+                printf("\nrx = %d", rx);
+                ry = (-y0 - yc) + 250;
+                //printf("\ny0 = %d", y0);
+                printf("\nry = %d", ry);
+                printf("\ncounter2 = %d", counter);
+
+                //DETERMINER LE RAYON DU CERCLE/ARC DE CERCLE
+                //OCTANTS 5/6
+                if(rx <= 0 && ry <= 0){
+                    rx = -rx;
+                    ry = -ry;
+                    if(rx >= ry){
+                        //printf("\noctant 5");
+                        r = rx; //OCTANT 5
+                    }else{
+                        //printf("\noctant 6");
+                        r = ry; //OCTANT 6
+                    }
+
+                }
+                //OCTANTS 7/8
+                else if(rx >= 0 && ry <= 0){
+                    ry = -ry;
+                    if(rx >= ry){
+                        //printf("\noctant 8");
+                        r = rx; //OCTANT 8
+                    }else if(ry >= rx){
+                        //printf("\noctant 7");
+                        r = ry; //OCTANT 7
+                    }
+
+                }
+                //OCTANTS 3/4
+                else if(rx <= 0 && ry >= 0){
+                    rx = -rx;
+                    if(rx >= ry){
+                        //printf("\noctant 4");
+                        r = rx; //OCTANT 4
+                    }else{
+                        //printf("\noctant 3");
+                        r = ry; //OCTANT 3
+                    }
+                }
+                //OCTANTS 1/2
+                 else if(rx >= 0 && ry >= 0){
+                    if(rx >= ry){
+                        //printf("\noctant 1");
+                        r = rx; //OCTANT 1
+                    }else{
+                        //printf("\noctant 2");
+                        r = ry; //OCTANT 2
+                    }
+                }
+            }
+        }
+
+
+        if(counter % 6 == 0){
+            if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
+                printf("\nSUR QUEL OCTANT TRACER: \n");
+                octantX = x0 - 250;
+                octantY = -y0 + 250;
+                printf("\noctantX = %d octantY = %d", octantX, octantY);
+
+                //OCTANTS 5/6
+                if(octantX <= 0 && octantY <= 0){
+                    octantX = -octantX;
+                    octantY = -octantY;
+                    if(octantX >= octantY){
+                        printf("\noctant 5");
+
+                    }else{
+                        printf("\noctant 6");
+                    }
+
+                }
+                //OCTANTS 7/8
+                else if(octantX >= 0 && octantY <= 0){
+                    ry = -ry;
+                    if(octantX >= octantY){
+                        printf("\noctant 8");
+
+                    }else if(octantY >= octantX){
+                        printf("\noctant 7");
+
+                    }
+
+                }
+                //OCTANTS 3/4
+                else if(octantX <= 0 && octantY >= 0){
+                    octantX = -octantX;
+                    if(octantX >= octantY){
+                        printf("\noctant 4");
+
+                    }else{
+                        printf("\noctant 3");
+                    }
+                }
+                //OCTANTS 1/2
+                 else if(rx >= 0 && octantY >= 0){
+                    if(rx >= octantY){
+                        printf("\noctant 1");
+                    }else{
+                        printf("\noctant 2");
+                    }
+                 }
+            }
+        }
+        counter++;
     }
 
 }
@@ -868,9 +1005,8 @@ int arrondi(int e){
     e = e + 0.5;
     return e;
 }
-/*CodeSegment calculCode(int x, int y, int Xmin, int Xmax, int Ymin, int Ymax){
 
-    //CALCULER LE CODE D'UN POINT XY
+CodeSegment calculCode(int x, int y, int Xmin, int Xmax, int Ymin, int Ymax){
     codeXY.somme = 0;
     if(y > Ymax){
         codeXY.haut = 1;
@@ -886,34 +1022,35 @@ int arrondi(int e){
         codeXY.gauche = 1;
         codeXY.somme++;
     }
+    printf("haut :%d \n", codeXY.haut);
+    printf("bas :%d \n", codeXY.bas);
+    printf("droite :%d \n", codeXY.droite);
+    printf("gauche :%d \n", codeXY.gauche);
+    printf("somme :%d \n", codeXY.somme);
     return codeXY;
 }
-int compareStructure(CodeSegment one, CodeSegment two){
-    return (one == 1 & two == 1);
+void creerFenetre(int Xmin, int Ymin, int Xmax, int Ymax){
+    bresemham_segment(Xmin, Xmax, Ymin, Ymin);
+    bresemham_segment(Xmin, Xmin, Ymin, Ymax);
+    bresemham_segment(Xmin, Xmax, Ymax, Ymax);
+    bresemham_segment(Xmax, Xmax, Ymin, Ymax);
+
+
 }
-int fenetrage(int xa, int xb, int ya, int yb, int Xmin, int Xmax, int Ymin, int Ymax){
 
-    int accept = false;
-    int fini = false;
-
-    CodeSegment codeA = calculCode(xa, ya, Xmin, Xmax, Ymin, Ymax);
-    CodeSegment codeB = calculCode(xb, yb, Xmin, Xmax, Ymin, Ymax);
-
+void fenetrage(int xa, int xb, int ya, int yb, int Xmin, int Xmax, int Ymin, int Ymax){
+    codeA = calculCode(xa, ya, Xmin, Xmax, Ymin, Ymax);
+    codeB = calculCode(xb, yb, Xmin, Xmax, Ymin, Ymax);
     m = (yb - ya) / (xb - xa);
 
     do{
-        if((codeA.somme) == 0 && (codeB.somme == 0)){
-            accept = true;
-            fini = true;
+        if(codeA.somme == 0 && codeB.somme == 0){
+            accepte = 1;
+            fini = 1;
         }else{
-
-            if(codeA & codeB ){
-                fini = true;
-            }else{
-                codeExt = codeA;
-                if(codeA.somme == 0){
-
-                }
+            codeExt = codeA;
+            if(codeA.somme == 0 || codeB.somme == 0 || codeA.haut == codeB.haut || codeA.gauche == codeB.gauche || codeA.droite == codeB.droite || codeA.bas == codeB.bas){
+                fini = 1;
             }
             //CALCUL COTE HAUT
             if(codeExt.haut = 1){
@@ -932,9 +1069,8 @@ int fenetrage(int xa, int xb, int ya, int yb, int Xmin, int Xmax, int Ymin, int 
                 x = Xmin;
                 y = ya + (Xmin - xa) * m;
             }
-
             //CALCUL DES INTERSECTIONS
-            if(codeExt == codeA){
+            if(codeExt.haut == codeA.haut && codeExt.gauche == codeA.gauche && codeExt.droite == codeA.droite && codeExt.bas == codeA.bas){
                 xa = x;
                 ya = y;
                 codeA = calculCode(x, y, Xmin, Xmax, Ymin, Ymax);
@@ -943,11 +1079,45 @@ int fenetrage(int xa, int xb, int ya, int yb, int Xmin, int Xmax, int Ymin, int 
                 yb = y;
                 codeB = calculCode(x, y, Xmin, Xmax, Ymin, Ymax);
             }
+
+        }
+        printf("%d", fini);
+    }while(fini != 1);
+    if(accepte == 1){
+        bresemham_segment(xa, xb, ya, yb);
+        affichage();
+    }
+}
+void arcSegment(int xc, int yc, int r){
+    if(counter != 0){
+
+        x = 0;
+        y = 30;
+        printf("\nrayon = %d", r);
+        dp = 5 - 4 * r;
+        affichePixel(x + xc, y + yc); //PREMIER PIXEL ALLUME A PARTIR DE L'OCTANT 2
+        affichePixel(y + xc, x + yc);
+        affichePixel(x + xc, -y + yc);
+        affichePixel(-y + xc, x + yc);
+
+        while(y > x){
+            if(dp <= 0){
+                dp = dp + 8 * x + 12;
+            }else{
+                dp = dp + 8 * (x - y) + 20;
+                y -= 1;
+            }
+            x += 1;
+            affichePixel(x + xc, y + yc);
+            affichePixel(y + xc, x + yc);
+            affichePixel(y + xc, -x + yc);
+            affichePixel(x + xc, -y + yc);
+            affichePixel(-x + xc, -y + yc);
+            affichePixel(-y + xc, -x + yc);
+            affichePixel(-y + xc, x + yc);
+            affichePixel(-x + xc, y + yc);
         }
 
-    }while(fini != true);
-    if(accept){
-        //afficher segments
     }
-
-}*/
+    counter++;
+}

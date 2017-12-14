@@ -117,30 +117,20 @@ struct SegmentList
 
 
 //INITIALISATION DE LA LISTE CHAINE
-SegmentList *initialisationSegment()
-{
+SegmentList *initialisationSegment(){
     SegmentList *listsegment = (SegmentList *)malloc(sizeof(*listsegment));
 
-
-    if (listsegment == NULL)
-    {
+    if(listsegment == NULL){
         exit(EXIT_FAILURE);
     }
-
-
 
     listsegment->first = NULL;
 
     return listsegment;
 }
 
-
-
 // FONCTION D'AJOUT D'UN ELEMENT DE LA LISTE CHAINEE
-void addSegment(SegmentList *listsegment, int xa, int ya, int xb, int yb)
-{
-
-
+void addSegment(SegmentList *listsegment, int xa, int ya, int xb, int yb){
     /* On crée un nouvel élément */
     Segment* newSegment = (Segment *)malloc(sizeof(*newSegment));
 
@@ -153,37 +143,28 @@ void addSegment(SegmentList *listsegment, int xa, int ya, int xb, int yb)
     /* On ajoute en fin, donc aucun élément ne va suivre */
     newSegment->next = NULL;
 
-    if(listsegment->first == NULL)
-    {
+    if(listsegment->first == NULL){
         /* Si la liste est videé il suffit de renvoyer l'élément créé */
         listsegment->first = newSegment;
-    }
-    else
-    {
+    }else{
         /* Sinon, on parcourt la liste à l'aide d'un pointeur temporaire et on
         indique que le dernier élément de la liste est relié au nouvel élément */
         Segment* temp = listsegment->first;
-        while(temp->next != NULL)
-        {
+        while(temp->next != NULL){
             temp = temp->next;
         }
         temp->next = newSegment;
     }
 }
 
-
 // AFFICHAGE DES ELEMENTS DE LA LISTE CHAINEE DES SEGMENTS
-void displaySegmentList(SegmentList *listsegment)
-{
-    if (listsegment == NULL)
-    {
+void displaySegmentList(SegmentList *listsegment){
+    if(listsegment == NULL){
         exit(EXIT_FAILURE);
     }
-
     Segment *actual = listsegment->first;
 
-    while (actual != NULL)
-    {
+    while (actual != NULL){
         printf("xa: %d, ya: %d, xb: %d, yb: %d -> ", actual->xa, actual->ya, actual->xb, actual->yb);
         actual = actual->next;
     }
@@ -193,8 +174,7 @@ void displaySegmentList(SegmentList *listsegment)
 
 // DEFINITION DE L'ELEMENT DE LA LISTE CHAINE DES SEGMENTS
 typedef struct Circle Circle;
-struct Circle
-{
+struct Circle{
     int x;
     int y;
     int r;
@@ -204,37 +184,25 @@ struct Circle
 
 // DEFINITION DE LA LISTE CHAINE DES SEGMENTS
 typedef struct CircleList CircleList;
-struct CircleList
-{
+struct CircleList{
     Circle *first;
 };
-
-
 //INITIALISATION DE LA LISTE CHAINE
 CircleList *initialisationCircle()
 {
     CircleList *listcircle = (CircleList *)malloc(sizeof(*listcircle));
 
 
-    if (listcircle == NULL)
-    {
+    if (listcircle == NULL){
         exit(EXIT_FAILURE);
     }
-
-
-
     listcircle->first = NULL;
 
     return listcircle;
 }
 
-
-
 // FONCTION D'AJOUT D'UN ELEMENT DE LA LISTE CHAINEE
-void addCircle(CircleList *listcircle, int x, int y, int r)
-{
-
-
+void addCircle(CircleList *listcircle, int x, int y, int r){
     /* On crée un nouvel élément */
     Circle* newCircle = (Circle *)malloc(sizeof(*newCircle));
 
@@ -246,18 +214,14 @@ void addCircle(CircleList *listcircle, int x, int y, int r)
     newCircle->r = r;
     newCircle->next = NULL;
 
-    if(listcircle->first == NULL)
-    {
+    if(listcircle->first == NULL){
         /* Si la liste est videé il suffit de renvoyer l'élément créé */
         listcircle->first = newCircle;
-    }
-    else
-    {
+    }else{
         /* Sinon, on parcourt la liste à l'aide d'un pointeur temporaire et on
         indique que le dernier élément de la liste est relié au nouvel élément */
         Circle* temp = listcircle->first;
-        while(temp->next != NULL)
-        {
+        while(temp->next != NULL){
             temp = temp->next;
         }
         temp->next = newCircle;
@@ -266,29 +230,22 @@ void addCircle(CircleList *listcircle, int x, int y, int r)
 
 
 // AFFICHAGE DES ELEMENTS DE LA LISTE CHAINEE
-void displayCircleList(CircleList *listcircle)
-{
-    if (listcircle == NULL)
-    {
+void displayCircleList(CircleList *listcircle){
+    if (listcircle == NULL){
         exit(EXIT_FAILURE);
     }
 
     Circle *actual = listcircle->first;
 
-    while (actual != NULL)
-    {
+    while (actual != NULL){
         printf("x: %d, y: %d, r: %d -> ", actual->x, actual->y, actual->r);
         actual = actual->next;
     }
     printf("NULL\n");
 }
 
-
-
-
 SegmentList *listOfSegment = initialisationSegment();
 CircleList *listOfCircle = initialisationCircle();
-
 
 int main(int argc, char **argv){
 
@@ -381,9 +338,6 @@ void bloc_couleur(){
 void affichage(){
 
     if(value == 1 && change == 1){ //SEGMENT
-
-
-
         bresemham_segment(xa, xb, ya, yb);
         addSegment(listOfSegment,xa,ya,xb,yb);
 
@@ -419,10 +373,8 @@ void affichage(){
     } else if(value == 1 && change == 0){
         change = 1;
     }else if(value == 9){
-
         clicEnd = 1;
         bresemham_segment(xa, xb, ya, yb);
-
     }
 
     glFlush();
@@ -447,7 +399,6 @@ void affichePixel(int x, int y){
 void bresemham_cercle(int xc, int yc, int r){
 
     if(counter != 0){
-
         x = 0;
         y = r;
         printf("\nrayon = %d", r);
@@ -634,14 +585,7 @@ void bresemham_segment(int xa, int xb, int ya, int yb){
         }
     }
 
-
-
-
-
-
-
 }
-
 
 void bresemham_ellipse(int xc, int yc, int r){
     if(y >= x){
@@ -651,8 +595,6 @@ void bresemham_ellipse(int xc, int yc, int r){
 
     }
 }
-
-
 void mouse(int button, int state, int x0, int y0){
 
     if(value == 2){
