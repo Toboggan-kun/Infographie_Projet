@@ -299,6 +299,41 @@ Color *initialisationColor(){
 }
 
 
+typedef struct Polygon Polygon;
+struct Polygon{
+    int xa;
+    int ya;
+    int xb;
+    int yb;
+    int polygonIdentifier;
+    Polygon *next;
+};
+
+
+typedef struct PolygonList PolygonList;
+struct PolygonList
+{
+    Polygon *first;
+};
+
+
+//INITIALISATION DE LA LISTE CHAINE
+PolygonList *initialisationPolygon(){
+    PolygonList *listpolygon = (PolygonList *)malloc(sizeof(*listpolygon));
+
+    if(listpolygon == NULL){
+        exit(EXIT_FAILURE);
+    }
+
+    listpolygon->first = NULL;
+
+    return listpolygon;
+}
+
+
+
+
+
 
 
 SegmentList *listOfSegment = initialisationSegment();
