@@ -415,7 +415,7 @@ void affichage(){
 
     }else if(value == 4){ //DECOUPAGE
 
-        fenetrage(xa, xb, ya, yb, Xmin, Xmax, Ymin, Ymax);
+        //fenetrage(xa, xb, ya, yb, Xmin, Xmax, Ymin, Ymax);
     }else if(value == 5){ //EFFACER CONSOLE
         clearConsole();
         counter = 0;
@@ -782,17 +782,21 @@ void mouse(int button, int state, int x0, int y0){
                 yb = -y0 + 250;
                 glBegin(GL_LINES);
 
-                glVertex2d(xa, ya);
-                glVertex2d(xb, ya);
+                bresemham_segment(xa, xb, ya, yb);
+                //glVertex2d(xa, ya);
+                //glVertex2d(xb, ya);
 
-                glVertex2d(xb, ya);
-                glVertex2d(xb, yb);
+                bresemham_segment(xb, xb, ya, yb);
+                //glVertex2d(xb, ya);
+                //glVertex2d(xb, yb);
 
-                glVertex2d(xb, yb);
-                glVertex2d(xa, yb);
+                bresemham_segment(xb, xa, yb, yb);
+                //glVertex2d(xb, yb);
+                //glVertex2d(xa, yb);
 
-                glVertex2d(xa, yb);
-                glVertex2d(xa, ya);
+                bresemham_segment(xa, xa, yb, ya);
+                //glVertex2d(xa, yb);
+                //glVertex2d(xa, ya);
                 affichage();
         }
 
@@ -1034,7 +1038,6 @@ void creerFenetre(int Xmin, int Ymin, int Xmax, int Ymax){
     bresemham_segment(Xmin, Xmin, Ymin, Ymax);
     bresemham_segment(Xmin, Xmax, Ymax, Ymax);
     bresemham_segment(Xmax, Xmax, Ymin, Ymax);
-
 
 }
 
