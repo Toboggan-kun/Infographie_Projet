@@ -40,6 +40,10 @@ SOURIS:
     int counter = 0;
     int change = 0;
     int drawSegment = 0;
+
+    int state;
+int button;
+
     //CLIC SOURIS
     int x0, y0;
     int cnt = 0;
@@ -71,6 +75,7 @@ SOURIS:
     int destinationPointX, destinationPointY;
     int clicPolygon = 0;
     int clicEnd;
+    int indexPolygone = 0;
 
     //FENETRAGE
     typedef struct{
@@ -124,6 +129,8 @@ void calculCode(void);
 void fenetrage(int, int, int, int, int, int, int, int);
 int compareStructure(CodeSegment, CodeSegment);
 void polygon_trace(int xa, int xb, int ya, int yb);
+void keyboard(unsigned char touch, int x, int y);
+void myLastPoint(int destinationPointX, int destinationPointY);
 
 
 typedef struct Color Color;
@@ -299,21 +306,23 @@ Color *initialisationColor(){
 }
 
 
-typedef struct Polygon Polygon;
-struct Polygon{
+
+
+typedef struct Polygone Polygone;
+struct Polygone{
     int xa;
     int ya;
     int xb;
     int yb;
     int polygonIdentifier;
-    Polygon *next;
+    Polygone *next;
 };
 
 
 typedef struct PolygonList PolygonList;
 struct PolygonList
 {
-    Polygon *first;
+    Polygone *first;
 };
 
 
@@ -331,13 +340,58 @@ PolygonList *initialisationPolygon(){
 }
 
 
+// FONCTION D'AJOUT D'UN ELEMENT DE LA LISTE CHAINEE
+void addPolygon(PolygonList *listpolygon, int xa, int ya, int xb, int yb,int index){
+    /* On crée un nouvel élément */
+    Polygone* newPolygon = (Polygone *)malloc(sizeof(*newPolygon));
 
+    /* On assigne la valeur au nouvel élément */
+    newPolygon->xa = xa;
+    newPolygon->ya = ya;
+    newPolygon->xb = xb;
+    newPolygon->yb = yb;
+    newPolygon->polygonIdentifier = index;
+
+    /* On ajoute en fin, donc aucun élément ne va suivre */
+    newPolygon->next = NULL;
+
+    if(listpolygon->first == NULL){
+        /* Si la liste est videé il suffit de renvoyer l'élément créé */
+        listpolygon->first = newPolygon;
+    }else{
+        /* Sinon, on parcourt la liste à l'aide d'un pointeur temporaire et on
+        indique que le dernier élément de la liste est relié au nouvel élément */
+        Polygone* temp = listpolygon->first;
+        while(temp->next != NULL){
+            temp = temp->next;
+        }
+        temp->next = newPolygon;
+    }
+}
+
+
+
+
+// AFFICHAGE DES ELEMENTS DE LA LISTE CHAINEE DES SEGMENTS
+void displayPolygonList(PolygonList *listpolygon){
+    if(listpolygon == NULL){
+        exit(EXIT_FAILURE);
+    }
+    Polygone *actual = listpolygon->first;
+
+    while (actual != NULL){
+        printf("xa: %d, ya: %d, xb: %d, yb: %d, index : %d -> ", actual->xa, actual->ya, actual->xb, actual->yb, actual->polygonIdentifier);
+        actual = actual->next;
+    }
+    printf("NULL\n");
+}
 
 
 
 
 SegmentList *listOfSegment = initialisationSegment();
 CircleList *listOfCircle = initialisationCircle();
+PolygonList *listOfPolygon = initialisationPolygon();
 Color *couleur = initialisationColor();
 
 int main(int argc, char **argv){
@@ -356,6 +410,7 @@ int main(int argc, char **argv){
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glColor3f(0.0, 0.0, 0.0); //COULEUR: BLANC
         glPointSize(2.0); //TAILLE D'UN POINT: 2px
+        glutKeyboardFunc(keyboard); // FERMETURE DU POLYGONE GRACE AU CLAVIER
         //ENREGISTREMENT DES FONCTIONS D'APPELS
         glutDisplayFunc(affichage);
         glutMouseFunc(mouse);
@@ -548,6 +603,8 @@ void affichage(){
         change = 0;
         listOfSegment = initialisationSegment();
         listOfCircle = initialisationCircle();
+        listOfPolygon = initialisationPolygon();
+        indexPolygone = 0;
 
     }else if(value == 6){ //EFFACER SEGMENT
         exit(0);
@@ -560,11 +617,13 @@ void affichage(){
     }else if(value == 1 && change == 0){
         change = 1;
 
-    }else if(value == 9){
+    }else if(value == 9){ // POLYGONE
 
         clicEnd = 1;
         if(drawSegment >= 2){
             bresemham_segment(xa, xb, ya, yb);
+            addPolygon(listOfPolygon,xa,ya,xb,yb, indexPolygone);
+            displayPolygonList(listOfPolygon);
         }
 
 
@@ -924,21 +983,6 @@ void mouse(int button, int state, int x0, int y0){
 
     }else if(value == 9){
         if(clicEnd == 1){
-            if(nbCote >= 3){
-
-                if(button == GLUT_RIGHT_BUTTON){
-                    printf("\nDERNIERE CONDITION");
-                    xa = xb;
-                    ya = yb;
-                    xb = destinationPointX;
-                    yb = destinationPointY;
-                    affichage();
-                    nbCote = 0;
-                    clicEnd = 0;
-                    drawSegment = 0;
-
-                }
-            }
             //TRACE DE SEGMENT AVEC DEUX CLICS SOURIS
             //ENREGISTREMENT DU PREMIER POINT
             while(clicPolygon == 0){
@@ -957,7 +1001,6 @@ void mouse(int button, int state, int x0, int y0){
                         counter = 1;
 
                     }
-                    nbCote++;
                 }
                 if(cnt % 4 != 0){
                     if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
@@ -967,9 +1010,8 @@ void mouse(int button, int state, int x0, int y0){
                         affichage();
 
                     }
-                    nbCote++;
-                }
 
+                }
 
                 cnt++;
                 clicPolygon = 1;
@@ -988,7 +1030,6 @@ void mouse(int button, int state, int x0, int y0){
 
                     }
                 }
-                nbCote++;
                 cnt++;
                 clicPolygon = 0;
             }
@@ -1588,4 +1629,32 @@ void arcSegment(int xc, int yc, int r){
 
     }
     counter++;
+}
+
+
+
+
+
+
+void myLastPoint(int destinationPointX, int destinationPointY){
+    if(value == 9){
+
+        xa = xb;
+        ya = yb;
+        xb = destinationPointX;
+        yb = destinationPointY;
+        affichage();
+        drawSegment = 0;
+        counter = 0;
+        indexPolygone++;
+    }
+
+}
+void keyboard(unsigned char touch, int x, int y){
+    switch(touch){
+    case 'c':
+        myLastPoint(destinationPointX, destinationPointY);
+        break;
+
+    }
 }
