@@ -441,8 +441,6 @@ int main(int argc, char **argv){
             glutAddMenuEntry("Ellipse", 3);
             glutAddMenuEntry("Fenêtrage", 4);
             glutAddMenuEntry("Effacer la console", 5);
-            glutAddMenuEntry("Effacer un segment", 6);
-            glutAddMenuEntry("Effacer un cercle", 7);
             glutAddMenuEntry("Arc de cercle", 10);
             glutAddMenuEntry("Polygone", 9);
             glutAddMenuEntry("Quitter le programme", 8);
@@ -450,7 +448,7 @@ int main(int argc, char **argv){
             glutAttachMenu(GLUT_RIGHT_BUTTON); //AU CLIC DROIT
         }
 
-
+/*
         //FENETRE DE COULEUR
         glutInitWindowSize(500, 500); //DIMENSION DE LA FENETRE
         glutInitWindowPosition (100, 100); //POSITION HAUT/GAUCHE
@@ -616,22 +614,46 @@ void affichage(){
         fenetrageTester = 1;
 
         Segment *actualSegment = listOfSegment->first;
+        Polygone *actualPolygon = listOfPolygon->first;
 
-        while (actualSegment != NULL){
-            fenetrage_xa = actualSegment->xa;
-            fenetrage_ya = actualSegment->ya;
-            fenetrage_xb = actualSegment->xb;
-            fenetrage_yb = actualSegment->yb;
+        while (actualSegment != NULL || actualPolygon != NULL){
 
-
-
-            fenetrage(fenetrage_xa, fenetrage_xb, fenetrage_ya, fenetrage_yb, windows_xa, windows_xb, windows_yb, windows_ya);
-
+                if(actualSegment != NULL){
+                    fenetrage_xa = actualSegment->xa;
+                fenetrage_ya = actualSegment->ya;
+                fenetrage_xb = actualSegment->xb;
+                fenetrage_yb = actualSegment->yb;
 
 
 
+                fenetrage(fenetrage_xa, fenetrage_xb, fenetrage_ya, fenetrage_yb, windows_xa, windows_xb, windows_yb, windows_ya);
 
-            actualSegment = actualSegment->next;
+                actualSegment = actualSegment->next;
+
+                }
+
+
+
+                if(actualPolygon != NULL){
+                    fenetrage_xa = actualPolygon->xa;
+                    fenetrage_ya = actualPolygon->ya;
+                    fenetrage_xb = actualPolygon->xb;
+                    fenetrage_yb = actualPolygon->yb;
+
+
+
+                    fenetrage(fenetrage_xa, fenetrage_xb, fenetrage_ya, fenetrage_yb, windows_xa, windows_xb, windows_yb, windows_ya);
+
+
+
+                    actualPolygon = actualPolygon->next;
+
+                }
+
+
+
+
+
         }
 
 
@@ -642,15 +664,13 @@ void affichage(){
         counter = 0;
         value = 0;
         change = 0;
+        changefenetrage == 0;
+        Xmin = Xmax = Ymin = Ymax = 0;
+        windows_xa = windows_xb = windows_ya = windows_yb = 0;
         listOfSegment = initialisationSegment();
         listOfCircle = initialisationCircle();
         listOfPolygon = initialisationPolygon();
         indexPolygone = 0;
-
-    }else if(value == 6){ //EFFACER SEGMENT
-        exit(0);
-    }else if(value == 7){ //EFFACER CERCLE
-        exit(0);
 
     }else if(value == 8){ //QUITTER LE PROGRAMME
         exit(0);
@@ -1014,7 +1034,7 @@ void mouse(int button, int state, int x0, int y0){
         }
 
         cnt++;
-    }else if(value == 4){
+    }else if(value == 4 && changefenetrage == 1){
 
         if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
                 windows_xa = x0 - 250;
@@ -1288,10 +1308,7 @@ void creerFenetre(int Xmin, int Ymin, int Xmax, int Ymax){
 
 void fenetrage(double xa, double xb, double ya, double yb, double Xmin, double Xmax, double Ymin, double Ymax){
 
-    printf("\n\nCode A");
-
     codeA = calculCode(xa, ya, Xmin, Xmax, Ymin, Ymax);
-    printf("\n\nCode B");
     codeB = calculCode(xb, yb, Xmin, Xmax, Ymin, Ymax);
     m = (double)(yb - ya) / (xb - xa);
 
@@ -1349,10 +1366,6 @@ void fenetrage(double xa, double xb, double ya, double yb, double Xmin, double X
     }while(fini != 1);
     if(accepte == 1){
 
-        printf("\n\nXa = %d",xa);
-    printf("\nYa = %d",ya);
-    printf("\nXb = %d",xb);
-    printf("\nYb = %d",yb);
         bresemham_segment(xa, xb, ya, yb);
 
 
