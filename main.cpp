@@ -40,6 +40,7 @@ SOURIS:
     int counter = 0;
     int change = 0;
     int drawSegment = 0;
+    int changefenetrage = 0;
 
     int state;
 int button;
@@ -48,9 +49,9 @@ int button;
     int x0, y0;
     int cnt = 0;
     //COORDONNEES DU SEGMENT [AB]
-    int xa = 0;
-    int ya = 0;
-    int xb, yb;
+    double xa = 0;
+    double ya = 0;
+    double xb, yb;
     int dx, dy;
     int incrE, incrNE, incrX, incrY, di;
 
@@ -86,18 +87,26 @@ int button;
         int haut;
     }CodeSegment;
 
+
+    double fenetrage_xa;
+    double fenetrage_xb;
+    double fenetrage_ya;
+    double fenetrage_yb;
+
     CodeSegment codeA;
     CodeSegment codeB;
     CodeSegment codeExt;
     CodeSegment codeXY;
     int accepte = 0;
     int fini = 0;
+    int fenetrageTester = 0;
 
-    int Xmin, Xmax, Ymin, Ymax; //COORDONNEES DE LA FENETRE
+    double Xmin, Xmax, Ymin, Ymax; //COORDONNEES DE LA FENETRE
     //VARIABLES INTERMEDIAIRES
-    int m, p;
-    int x = 0;
-    int y = 0;
+    int p;
+    double m;
+    double x = 0;
+    double y = 0;
     int c; //COULEUR
 
     //COULEUR
@@ -107,6 +116,12 @@ int button;
     int B[255];
     int palette[1280][3];
     int index = 0;
+
+
+    double windows_xa;
+    double windows_ya;
+    double windows_xb;
+    double windows_yb;
 
 
     double red;
@@ -121,12 +136,12 @@ void clearConsole(void);
 //void menuColor(int numberMenu);
 void pickColor(void);
 void mouse(int button, int state, int x0, int y0);
-void affichePixel(int x, int y);
+void affichePixel(double x, double y);
 void affichage(void);
 void bresemham_cercle(int xc, int yc, int r);
-void bresemham_segment(int xa, int xb, int ya, int yb);
+void bresemham_segment(double xa, double xb, double ya, double yb);
 void calculCode(void);
-void fenetrage(int, int, int, int, int, int, int, int);
+void fenetrage(double, double, double, double, double, double, double, double);
 int compareStructure(CodeSegment, CodeSegment);
 void polygon_trace(int xa, int xb, int ya, int yb);
 void keyboard(unsigned char touch, int x, int y);
@@ -146,10 +161,10 @@ struct Color
 typedef struct Segment Segment;
 struct Segment
 {
-    int xa;
-    int ya;
-    int xb;
-    int yb;
+    double xa;
+    double ya;
+    double xb;
+    double yb;
     Segment *next;
 };
 
@@ -176,7 +191,7 @@ SegmentList *initialisationSegment(){
 }
 
 // FONCTION D'AJOUT D'UN ELEMENT DE LA LISTE CHAINEE
-void addSegment(SegmentList *listsegment, int xa, int ya, int xb, int yb){
+void addSegment(SegmentList *listsegment, double xa, double ya, double xb, double yb){
     /* On crée un nouvel élément */
     Segment* newSegment = (Segment *)malloc(sizeof(*newSegment));
 
@@ -211,7 +226,8 @@ void displaySegmentList(SegmentList *listsegment){
     Segment *actual = listsegment->first;
 
     while (actual != NULL){
-        printf("xa: %d, ya: %d, xb: %d, yb: %d -> ", actual->xa, actual->ya, actual->xb, actual->yb);
+
+        printf("xa: %.2lf, ya: %.2lf, xb: %.2lf, yb: %.2lf -> ", actual->xa, actual->ya, actual->xb, actual->yb);
         actual = actual->next;
     }
     printf("NULL\n");
@@ -390,6 +406,7 @@ void displayPolygonList(PolygonList *listpolygon){
 
 
 SegmentList *listOfSegment = initialisationSegment();
+SegmentList *tempSegmentList = initialisationSegment();
 CircleList *listOfCircle = initialisationCircle();
 PolygonList *listOfPolygon = initialisationPolygon();
 Color *couleur = initialisationColor();
@@ -592,10 +609,34 @@ void affichage(){
 
     }else if(value == 3){
 
-    }else if(value == 4){ //DECOUPAGE
+    }else if(value == 4 && changefenetrage == 1){ //DECOUPAGE
 
 
-        //fenetrage(xa, xb, ya, yb, Xmin, Xmax, Ymin, Ymax);
+
+        fenetrageTester = 1;
+
+        Segment *actualSegment = listOfSegment->first;
+
+        while (actualSegment != NULL){
+            fenetrage_xa = actualSegment->xa;
+            fenetrage_ya = actualSegment->ya;
+            fenetrage_xb = actualSegment->xb;
+            fenetrage_yb = actualSegment->yb;
+
+
+
+            fenetrage(fenetrage_xa, fenetrage_xb, fenetrage_ya, fenetrage_yb, windows_xa, windows_xb, windows_yb, windows_ya);
+
+
+
+
+
+            actualSegment = actualSegment->next;
+        }
+
+
+        fenetrageTester = 0;
+
     }else if(value == 5){ //EFFACER CONSOLE
         clearConsole();
         counter = 0;
@@ -614,9 +655,6 @@ void affichage(){
     }else if(value == 8){ //QUITTER LE PROGRAMME
         exit(0);
 
-    }else if(value == 1 && change == 0){
-        change = 1;
-
     }else if(value == 9){ // POLYGONE
 
         clicEnd = 1;
@@ -630,6 +668,12 @@ void affichage(){
     }else if(value == 10){
 
         r = 0;
+    }else if(value == 1 && change == 0){
+        change = 1;
+
+    }else if(value == 4 && changefenetrage == 0){
+        changefenetrage = 1;
+
     }
 
     glFlush();
@@ -638,9 +682,20 @@ void affichage(){
 void clearConsole(){
     glClear(GL_COLOR_BUFFER_BIT);
 }
-void affichePixel(int x, int y){
+void affichePixel(double x, double y){
     //glClear(GL_COLOR_BUFFER_BIT);
-        glColor3f(1.0,1.0,1.0); //BLANC
+
+
+
+
+        if (fenetrageTester == 1){
+            glColor3f(1.0,0.0,0.0); //ROUGE
+            glPointSize(2.5); //TAILLE D'UN POINT: 2px
+        } else {
+            glColor3f(1.0,1.0,1.0); //BLANC
+            glPointSize(2.0); //TAILLE D'UN POINT: 2px
+        }
+
         glBegin(GL_POINTS);
             glVertex2f(x, y);
         glEnd();
@@ -683,7 +738,7 @@ void bresemham_cercle(int xc, int yc, int r){
     counter++;
 }
 
-void bresemham_segment(int xa, int xb, int ya, int yb){
+void bresemham_segment(double xa, double xb, double ya, double yb){
     //TRACE DE SEGMENTS
     if(ya <= yb){ //OCTANTS 1, 2, 3 ET 4
         if(xa <= xb){ //OCTANTS 1 ET 2
@@ -962,19 +1017,18 @@ void mouse(int button, int state, int x0, int y0){
     }else if(value == 4){
 
         if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-                xa = x0 - 250;
-                ya = -y0 + 250;
+                windows_xa = x0 - 250;
+                windows_ya = -y0 + 250;
         }
         if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
-                xb = x0 - 250;
-                yb = -y0 + 250;
+                windows_xb = x0 - 250;
+                windows_yb = -y0 + 250;
                 glBegin(GL_LINES);
 
-                bresemham_segment(xa, xb, ya, ya);
-                bresemham_segment(xb, xb, ya, yb);
-                bresemham_segment(xb, xa, yb, yb);
-                bresemham_segment(xa, xa, yb, ya);
-                fenetrage(xa,xb,ya,yb,xa,xb,yb,ya);
+                bresemham_segment(windows_xa, windows_xb, windows_ya, windows_ya);
+                bresemham_segment(windows_xb, windows_xb, windows_ya, windows_yb);
+                bresemham_segment(windows_xb, windows_xa, windows_yb, windows_yb);
+                bresemham_segment(windows_xa, windows_xa, windows_yb, windows_ya);
                 affichage();
 
 
@@ -1174,316 +1228,6 @@ void mouse(int button, int state, int x0, int y0){
 
 void mouseColor(int button, int state, int x0, int y0){
 
-    if(value == 2){
-
-        if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-            printf("\nPOINT ORIGINE: ");
-            xc = x0 - 250;
-            printf("\nxc = %d", xc);
-            yc = -y0 + 250;
-            printf("\nyc = %d", yc);
-        }
-
-        if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
-            rx = 0;
-            ry = 0;
-            printf("\nPOINT D'ARRIVEE: ");
-            //MOUVEMENT GAUCHE-DROITE
-            rx = (x0 - xc) - 250;
-            //printf("\nx0 = %d", x0);
-            printf("\nrx = %d", rx);
-            ry = (-y0 - yc) + 250;
-            //printf("\ny0 = %d", y0);
-            printf("\nry = %d", ry);
-
-            //OCTANTS 5/6
-            if(rx <= 0 && ry <= 0){
-                rx = -rx;
-                ry = -ry;
-                if(rx >= ry){
-                    //printf("\noctant 5");
-                    r = rx; //OCTANT 5
-                }else{
-                    //printf("\noctant 6");
-                    r = ry; //OCTANT 6
-                }
-
-            }
-            //OCTANTS 7/8
-            else if(rx >= 0 && ry <= 0){
-                ry = -ry;
-                if(rx >= ry){
-                    //printf("\noctant 8");
-                    r = rx; //OCTANT 8
-                }else if(ry >= rx){
-                    //printf("\noctant 7");
-                    r = ry; //OCTANT 7
-                }
-
-            }
-            //OCTANTS 3/4
-            else if(rx <= 0 && ry >= 0){
-                rx = -rx;
-                if(rx >= ry){
-                    //printf("\noctant 4");
-                    r = rx; //OCTANT 4
-                }else{
-                    //printf("\noctant 3");
-                    r = ry; //OCTANT 3
-                }
-            }
-            //OCTANTS 1/2
-             else if(rx >= 0 && ry >= 0){
-                if(rx >= ry){
-                    //printf("\noctant 1");
-                    r = rx; //OCTANT 1
-                }else{
-                    //printf("\noctant 2");
-                    r = ry; //OCTANT 2
-                }
-            }
-            affichage();
-        }
-    }else if(value == 1){
-        //TRACE DE SEGMENT AVEC DEUX CLICS SOURIS
-        if(cnt % 4 != 0){
-            if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-                xb = x0 - 250;
-                yb = -y0 + 250;
-                affichage();
-            }
-        }
-        if(cnt % 2 == 0){
-            if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-                xa = x0 - 250;
-                ya = -y0 + 250;
-            }
-        }
-
-        cnt++;
-    }else if(value == 4){
-
-        if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-                xa = x0 - 250;
-                ya = -y0 + 250;
-        }
-        if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
-                xb = x0 - 250;
-                yb = -y0 + 250;
-                glBegin(GL_LINES);
-
-                bresemham_segment(xa, xb, ya, yb);
-                bresemham_segment(xb, xb, ya, yb);
-                bresemham_segment(xb, xa, yb, yb);
-                bresemham_segment(xa, xa, yb, ya);
-                affichage();
-
-        }
-
-    }else if(value == 9){
-        if(clicEnd == 1){
-            if(nbCote >= 3){
-
-                if(button == GLUT_RIGHT_BUTTON){
-                    printf("\nDERNIERE CONDITION");
-                    xa = xb;
-                    ya = yb;
-                    xb = destinationPointX;
-                    yb = destinationPointY;
-                    affichage();
-                    nbCote = 0;
-                    clicEnd = 0;
-                    drawSegment = 0;
-
-                }
-            }
-            //TRACE DE SEGMENT AVEC DEUX CLICS SOURIS
-            //ENREGISTREMENT DU PREMIER POINT
-            while(clicPolygon == 0){
-                //printf("\n1- valeur de clic = %d", clicPolygon);
-                if(cnt % 2 == 0){
-                    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-                        xa = x0 - 250;
-                        ya = -y0 + 250;
-
-                        if(counter == 0){
-                            destinationPointX = xa;
-                            destinationPointY = ya;
-                            printf("\nPremier point enregistre!\nxa = %d\n ya = %d\n", xa, ya);
-
-                        }
-                        counter = 1;
-
-                    }
-                    nbCote++;
-                }
-                if(cnt % 4 != 0){
-                    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-                        xb = x0 - 250;
-                        yb = -y0 + 250;
-
-                        affichage();
-
-                    }
-                    nbCote++;
-                }
-
-
-                cnt++;
-                clicPolygon = 1;
-            }
-            //ON PART A PARTIR DU DERNIER POINT TRACE
-            if(clicPolygon != 0){
-                if(cnt % 4 != 0){
-                    xa = xb;
-                    ya = yb;
-
-                    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-                        xb = x0 - 250;
-                        yb = -y0 + 250;
-                        drawSegment++;
-                        affichage();
-
-                    }
-                }
-                nbCote++;
-                cnt++;
-                clicPolygon = 0;
-            }
-
-        }
-
-    }else if(value == 10){
-        if(counter % 2 == 0){
-            if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-                printf("\nPOINT ORIGINE: ");
-                xc = x0 - 250;
-                printf("\nxc = %d", xc);
-                yc = -y0 + 250;
-                printf("\nyc = %d", yc);
-                printf("\ncounter = %d", counter);
-            }
-        }
-        if(counter % 4 == 0){
-
-            if(button == GLUT_LEFT_BUTTON && state == GLUT_UP){
-                rx = 0;
-                ry = 0;
-                printf("\nPOINT D'ARRIVEE/RAYON: ");
-                //MOUVEMENT GAUCHE-DROITE
-                rx = (x0 - xc) - 250;
-                //printf("\nx0 = %d", x0);
-                printf("\nrx = %d", rx);
-                ry = (-y0 - yc) + 250;
-                //printf("\ny0 = %d", y0);
-                printf("\nry = %d", ry);
-                printf("\ncounter2 = %d", counter);
-
-                //DETERMINER LE RAYON DU CERCLE/ARC DE CERCLE
-                //OCTANTS 5/6
-                if(rx <= 0 && ry <= 0){
-                    rx = -rx;
-                    ry = -ry;
-                    if(rx >= ry){
-                        //printf("\noctant 5");
-                        r = rx; //OCTANT 5
-                    }else{
-                        //printf("\noctant 6");
-                        r = ry; //OCTANT 6
-                    }
-
-                }
-                //OCTANTS 7/8
-                else if(rx >= 0 && ry <= 0){
-                    ry = -ry;
-                    if(rx >= ry){
-                        //printf("\noctant 8");
-                        r = rx; //OCTANT 8
-                    }else if(ry >= rx){
-                        //printf("\noctant 7");
-                        r = ry; //OCTANT 7
-                    }
-
-                }
-                //OCTANTS 3/4
-                else if(rx <= 0 && ry >= 0){
-                    rx = -rx;
-                    if(rx >= ry){
-                        //printf("\noctant 4");
-                        r = rx; //OCTANT 4
-                    }else{
-                        //printf("\noctant 3");
-                        r = ry; //OCTANT 3
-                    }
-                }
-                //OCTANTS 1/2
-                 else if(rx >= 0 && ry >= 0){
-                    if(rx >= ry){
-                        //printf("\noctant 1");
-                        r = rx; //OCTANT 1
-                    }else{
-                        //printf("\noctant 2");
-                        r = ry; //OCTANT 2
-                    }
-                }
-            }
-        }
-
-
-        if(counter % 6 == 0){
-            if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN){
-                printf("\nSUR QUEL OCTANT TRACER: \n");
-                octantX = x0 - 250;
-                octantY = -y0 + 250;
-                printf("\noctantX = %d octantY = %d", octantX, octantY);
-
-                //OCTANTS 5/6
-                if(octantX <= 0 && octantY <= 0){
-                    octantX = -octantX;
-                    octantY = -octantY;
-                    if(octantX >= octantY){
-                        printf("\noctant 5");
-
-                    }else{
-                        printf("\noctant 6");
-                    }
-
-                }
-                //OCTANTS 7/8
-                else if(octantX >= 0 && octantY <= 0){
-                    ry = -ry;
-                    if(octantX >= octantY){
-                        printf("\noctant 8");
-
-                    }else if(octantY >= octantX){
-                        printf("\noctant 7");
-
-                    }
-
-                }
-                //OCTANTS 3/4
-                else if(octantX <= 0 && octantY >= 0){
-                    octantX = -octantX;
-                    if(octantX >= octantY){
-                        printf("\noctant 4");
-
-                    }else{
-                        printf("\noctant 3");
-                    }
-                }
-                //OCTANTS 1/2
-                 else if(rx >= 0 && octantY >= 0){
-                    if(rx >= octantY){
-                        printf("\noctant 1");
-                    }else{
-                        printf("\noctant 2");
-                    }
-                 }
-            }
-        }
-        counter++;
-    }
-
 }
 
 
@@ -1500,9 +1244,12 @@ int arrondi(int e){
     return e;
 }
 
-CodeSegment calculCode(int x, int y, int Xmin, int Xmax, int Ymin, int Ymax){
+CodeSegment calculCode(double x, double y, double Xmin, double Xmax, double Ymin, double Ymax){
     codeXY.somme = 0;
-
+    codeXY.haut = 0;
+    codeXY.bas = 0;
+    codeXY.gauche = 0;
+    codeXY.droite = 0;
 
 
 
@@ -1521,6 +1268,9 @@ CodeSegment calculCode(int x, int y, int Xmin, int Xmax, int Ymin, int Ymax){
         codeXY.somme++;
     }
 
+
+
+
     return codeXY;
 }
 
@@ -1536,8 +1286,12 @@ void creerFenetre(int Xmin, int Ymin, int Xmax, int Ymax){
 }
 
 
-void fenetrage(int xa, int xb, int ya, int yb, int Xmin, int Xmax, int Ymin, int Ymax){
+void fenetrage(double xa, double xb, double ya, double yb, double Xmin, double Xmax, double Ymin, double Ymax){
+
+    printf("\n\nCode A");
+
     codeA = calculCode(xa, ya, Xmin, Xmax, Ymin, Ymax);
+    printf("\n\nCode B");
     codeB = calculCode(xb, yb, Xmin, Xmax, Ymin, Ymax);
     m = (double)(yb - ya) / (xb - xa);
 
@@ -1545,12 +1299,16 @@ void fenetrage(int xa, int xb, int ya, int yb, int Xmin, int Xmax, int Ymin, int
     fini = 0;
 
 
+    fenetrageTester = 1;
+
+
+
     do{
         if(codeA.somme == 0 && codeB.somme == 0){
             accepte = 1;
             fini = 1;
         }else{
-            if ( (codeA.somme != 0 && codeB.somme != 0) || (codeA.haut != 0 && codeB.haut != 0) || (codeA.bas != 0 && codeB.bas != 0) || (codeA.gauche != 0 && codeB.gauche != 0) || (codeA.droite != 0 && codeB.droite != 0) ) {
+            if ( (codeA.haut == 1 && codeB.haut == 1) || (codeA.bas == 1 && codeB.bas == 1) || (codeA.gauche == 1 && codeB.gauche == 1) || (codeA.droite == 1 && codeB.droite == 1) ) {
                 fini = 1;
             } else {
                 codeExt = codeA;
@@ -1564,12 +1322,13 @@ void fenetrage(int xa, int xb, int ya, int yb, int Xmin, int Xmax, int Ymin, int
                 } else if (codeExt.bas == 1){
                     y = Ymin;
                     x = xa + (Ymin - ya) / m;
-                } else if (codeExt.gauche == 1){
-                    y = Xmax;
-                    x = ya + (Xmax - ya) * m;
                 } else if (codeExt.droite == 1){
-                    y = Xmin;
-                    x = ya + (Xmin - ya) / m;
+                    x = Xmax;
+                    y = ya + (Xmax - xa) * m;
+                } else if (codeExt.gauche == 1){
+                    x = Xmin;
+                    y = ya + (Xmin - xa) * m;
+
                 }
 
                 if ( (codeExt.haut == codeA.haut) && (codeExt.bas == codeA.bas) && (codeExt.gauche == codeA.gauche) && (codeExt.droite == codeA.droite) ){
@@ -1583,14 +1342,23 @@ void fenetrage(int xa, int xb, int ya, int yb, int Xmin, int Xmax, int Ymin, int
                 }
             }
 
+
         }
 
 
     }while(fini != 1);
     if(accepte == 1){
-        // bresemham_segment(xa, xb, ya, yb);
-        affichage();
+
+        printf("\n\nXa = %d",xa);
+    printf("\nYa = %d",ya);
+    printf("\nXb = %d",xb);
+    printf("\nYb = %d",yb);
+        bresemham_segment(xa, xb, ya, yb);
+
+
     }
+
+    fenetrageTester = 0;
 }
 
 
